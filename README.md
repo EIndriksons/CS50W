@@ -6,3 +6,4 @@ If you are a student of this course - please see the Course guidelines on [Acade
 
 ## Table of Contents
 - [Lecture 0](/lecture0) - Git
+- [Lecture 1](/lecture1) - HTML, CSS
