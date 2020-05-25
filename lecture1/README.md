@@ -27,3 +27,10 @@ Open source projects are often developed using forks. There will be one central 
 A pull request can be made to merge a branch of a repository with another branch of the same repository or even a different repository. Pull requests are a good way to get feedback on changes from collaborators on the same project.
 
 Note that forks and pull requests are both GitHub specific features.
+
+## More on HTML
+More useful HTML tags:
+- `<a href="path/to/hello.html">Click here!</a>` : link to `hello.html`, some URL, or some other content marked by `id` by passing `#id` to `href`
+- `<input type="radio"> Option 1` : radio-button option for a form, where only 1 out of all the options may be selected ``` html
+
+There are lots of new useful tags with HTML5, but not all browsers, especially older browsers, will support these new features. Nonetheless, these new features can be used with increasing confidence that they will be rendered appropriately for a significant portion of users.
