@@ -180,3 +180,48 @@ Bootstrap’s columns and rows are referenced in HTML with `class="row"` and `cl
 Elements can take up a different number of columns based on the size of the screen with attributes like `class="col-lg-3 col-sm-6"`. On a small screen, 6 columns will be used, but in a large screen, 3 columns will be used. If another row has to be added, Bootstrap will do so automatically. This is a much easier alternative to something like flexbox (Bootstrap does so behind the scenes).
 
 Bootstrap has a whole host of other pretty components which can easily be applied by simply adding the appropriate `class` attribute to an element. See Bootstrap’s documentation for an extensive list.
+
+## Sass
+Sass is an entirely new language built on top of CSS which gives it a little more power and flexibility when designing CSS stylesheets and allows for the generation of stylesheets in a programmatic way. Ultimately, Sass just makes writing CSS easier.
+
+In order to use Sass, it must first be [installed](http://sass-lang.com/install). Once installed, we can execute `sass style.scss style.css` to compile our Sass file `style.scss` into `sass.css`, which can actually be linked to and interpreted by an HTML file.
+
+If recompiling gets annoying, `sass --watch style.scss:style.css` to automatically recompile `style.scss` as `style.css` whenever `style.scss` is modified. Additionally, many website deployment systems, like GitHub Pages, have built in support for Sass. For example, if an `.scss` file is pushed to GitHub, GitHub Pages will compile it automatically.
+
+### Features
+One feature of Sass is variables, which are defined as so: `$color: red;`. Anywhere `$color` is passed as a value for a CSS property, e.g. `color: $color`, `red` will be used.
+
+Another feature is nesting, which is a more concise way to style elements which are related to other elements in a certain way.
+
+```scss
+div {
+    font-size: 18px;
+
+    p {
+        color: blue;
+    }
+
+    ul {
+        color: green;
+    }
+}
+```
+
+In this example, all `p`s inside `div`s will be have `color: blue`, but also `font-size: 18px`, while `ul`s inside `div`s will have `color: green` instead, but still also `font-size: 18px`.
+
+One more useful feature is inheritance, which is similar to the object-oriented concept. Sass’s inheritance allows for slight tweaking of a general style for different components.
+
+```scss
+%message {
+    font-family: sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.specificMessage {
+    @extend %message;
+    background-color: green;
+}
+```
+
+`%message` defines a general pattern that can be inherited in other style definitions using the `@extend %message` syntax. In addition, other style properties can be added.
