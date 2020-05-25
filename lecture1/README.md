@@ -34,3 +34,70 @@ More useful HTML tags:
 - `<input type="radio"> Option 1` : radio-button option for a form, where only 1 out of all the options may be selected ``` html
 
 There are lots of new useful tags with HTML5, but not all browsers, especially older browsers, will support these new features. Nonetheless, these new features can be used with increasing confidence that they will be rendered appropriately for a significant portion of users.
+
+## More on CSS
+CSS selectors are used to select different parts of a website to style in particular ways.
+
+Some common CSS selectors:
+
+1. Select `h1` and `h2`
+
+```css
+h1, h2 {
+    color: red;
+}
+```
+
+2. Select all `li` that are descendants of `ol` (not necessarily immediate descendants)
+
+```css
+ol li {
+    color: red;
+}
+```
+
+3. Select all `li` that are immediate children of `ol`
+
+```css
+ol > li {
+    color: red;
+}
+```
+
+4. Select all `input` fields with the attribute `type=text`
+
+```css
+input[type=text] {
+    background-color: red;
+}
+```
+
+5. Select all `button`s with the pseudoclass `hover`
+
+```css
+button:hover {
+    background-color: orange;
+}
+```
+
+**Note:** A ‘pseudoclass’ is a special state of an HTML element. In this example, the state is whether or not the cursor is hovering over a button.
+
+6. Select all `before` pseudoelements of the element `a`
+
+```css
+a::before {
+    content: "\21d2 Click here: ";
+    font-weight: bold;
+}
+```
+
+**Note:** A ‘pseudoelement’ is a way to affect certain parts of an HTML element. In this example, the before selector applies content with its included styling before the contents of all a elements.
+
+Select all `selection` pseudoelements of the element `p`
+
+```css
+p::selection {
+    color: red;
+    background-color: yellow;
+}
+```
