@@ -101,3 +101,67 @@ p::selection {
     background-color: yellow;
 }
 ```
+
+## Responsive Design
+Responsive design is the idea that a website should look good regardless of the platform its viewed from.
+
+One way we can do this is by using a ‘media query’:
+
+```css
+<style>
+    @media print {
+        .screen-only {
+            display: none;
+        }
+    }
+</style>
+<body>
+    <p class="screen-only">This will not appear when printed</p>
+</body>
+```
+
+`@media` is a media query, which means the following CSS will be applied only in certain situations, namely, when the webpage is being printed. `.screen-only` is a class selector which identifies what content we want to be print only
+
+```css
+@media (min-width: 500px) {
+    body {
+        background-color: red;
+    }
+}
+@media (max-width: 499px) {
+    body {
+        background-color: yellow;
+    }
+}
+```
+
+In this example, When the width of the screen is at least 500px, the background color of body will be red, while if it is less than 499px, the background color of body will be yellow.
+
+In order to interact with the screen size, the following must be included in head: `<meta name="viewport" content="width=device-width, initial-scale=1.0">`
+viewport is the visible area on which the screen is being displayed. `content` refers to the entire webpage the `width` of which is being set to `device-width`.
+
+### Flexbox
+Another tool is ‘flexbox’. Flexbox allows for the reorganization of content based on the size of the viewport.
+
+By setting `display: flex` and `flex-wrap: wrap`, content will wrap vertically if necessary, so no content is lost when the width of the screen is shrunk.
+
+```css
+.container {
+    display: flex;
+    flex-wrap: wrap;
+}
+```
+
+### Grid
+A grid of content can be achieved in a similar fashion.
+
+By setting `display: grid`, all the different characteristics of a grid layout can be used to format content. In particular, when defining `grid-template-colummns`, the final column can be set to `auto`, filling up however much screen space may be left. If multiple columns are set to `auto`, they will equally share the remaining space.
+
+```css
+.grid {
+    display: grid;
+    grid-column-gap: 20px;
+    grid-row-gap: 10px;
+    grid-template-columns: 200px 200px auto;
+}
+```
