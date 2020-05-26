@@ -26,3 +26,44 @@ Some basic Python syntax:
 - `bool` : boolean value (True or False)
 - `None` : empty value
 - **Note** that Python is a weakly typed language.
+
+### Sequences
+**Strings** are justs sequence of characters, and can be indexed as such.
+
+```python
+name = "Alice"
+print(name[0])
+```
+
+**Tuples** are immutable collections of values under a single name, which can be indexed positionally.
+
+```python
+coordinates = (10.0, 20.0)
+print(coordinates[1])
+```
+
+**Lists** are mutable collections of values under a single name, which can be indexed positionally. Indexing out of range raises a Python ‘exception’. In this case, an `IndexError`, because there is no fourth value in `names` for Python to return.
+
+```python
+names = ["Alice", "Bob", "Charlie"]
+print(names[2])
+```
+
+**Sets** are unordered collection of unique items. Because they are unordered, they cannot be indexed. `s` is a `set`, an unordered collection of unique items.
+
+```python
+s = set()
+s.add(1)
+s.add(3)
+s.add(5)
+```
+
+**Dictionaries** (or dicts) are like lists, except that they are unordered and their values are indexed by `keys`. The `+=` operator increments the left-hand side by the right-hand side.
+
+```python
+ages = {"Alice": 22, "Bob": 27}
+print(ages["Alice"])
+ages["Alice"] += 1
+```
+
+**Note** that any sequence in Python can contain any number of data types.
