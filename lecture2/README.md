@@ -181,3 +181,81 @@ Flask is designed in terms of **routes**. A route is the part of the URL that de
 To start up a flask application, run `flask run` in the directory where `application.py` is located, with `flask` being the web server. Flask will print out the URL the server is running on and where the website can be accessed at.
 
 `flask run` produces an error, try running `export FLASK_APP=application.py` to make sure it knows to look for `application.py` as the web server.
+
+### Jinja2
+When any string is entered as a route, that will be stored as `name`, which is can then be used inside the decorated function.
+
+```py
+@app.route("/<string:name>")
+def hello(name):
+    return f"Hello, {name}!"
+```
+
+Since Python code is rendering the website, anything Python is capable of can be used. For example, `name` can be capitalized before it’s displayed:
+
+```py
+name = name.capitalize()
+```
+
+HTML can also be used inside the return value:
+
+```py
+return f"<h1>Hello, {name}!</h1>".
+```
+
+Inline HTML isn’t that useful, though. Separate HTML files can be used like so:
+
+```py
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+```
+
+`index.html` and any other template files should be stored in a directory named `templates`.
+
+Variables can be defined as Python variables in `application.py` and used in HTML templates by passing them in as arguments to `render_template`. These templates are rendered using a separate templating language called Jinja2.
+
+In `application.py`:
+
+```py
+headline = "Hello, world!"
+return render_template("index.html", headline=headline)
+```
+
+In `index.html`:
+
+```html
+<h1>{{ headline }}</h1>
+```
+
+Jinja2 also allows for conditional statements:
+
+```html
+{% if new_year %}
+    <h1>Yes! Happy New Year!</h1>
+{% else %}
+    <h1>No.</h1>
+{% endif %}
+```
+
+Loops:
+
+```html
+{% for name in names %}
+    <li>{{ name }}</li>
+{% endfor %}
+```
+
+`names` should be something that can be looped over, like a Python list, for example.
+
+If there are multiple routes on the Flask server, then one route can link to another as so:
+
+```html
+<a href="{{ url_for('more') }}">See more...</a>
+```
+
+`more` is the name of a function associated with a route.
