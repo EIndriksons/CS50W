@@ -155,3 +155,29 @@ To access the `x` attribute of `p`, use dot notation:
 ```py
 print(p.x)
 ```
+
+## Flask
+HTTP (Hypertext Transfer Protocol) is the system the internet uses to interact and communicate between computers and servers. When a URL is entered into a browser, an HTTP request is sent to a server, which interprets the request and sends appropriate HTTP response, which, if all goes as expected, contains the requested information to be displayed by the web browser.
+
+Having already begun to design websites, the next step is to write the code that takes care of the server-side processing: receiving and interpreting requests, and generating a response for the user.
+
+Flask a microframework written in Python that makes it easy to get a simple web application up and running with some features that can be useful in the development process.
+
+### A Simple App
+Flask code is generally stored inside `application.py`, and might look like so:
+
+```py
+from flask import Flask # Import the class `Flask` from the `flask` module, written by someone else.
+
+app = Flask(__name__) # Instantiate a new web application called `app`, with `__name__` representing the current file
+
+@app.route("/") # A decorator; when the user goes to the route `/`, exceute the function immediately below
+def index():
+    return "Hello, world!"
+```
+
+Flask is designed in terms of **routes**. A route is the part of the URL that determines which page is being requested. The route for the default page is simply `/`.
+
+To start up a flask application, run `flask run` in the directory where `application.py` is located, with `flask` being the web server. Flask will print out the URL the server is running on and where the website can be accessed at.
+
+`flask run` produces an error, try running `export FLASK_APP=application.py` to make sure it knows to look for `application.py` as the web server.
