@@ -295,3 +295,39 @@ Everything in the `heading` block is placed where indicated in `layout.html`, an
     </p>
 {% endblock %}
 ```
+
+#### Forms
+With Flask and Jinja2, the results from HTML forms can now be actually stored and used.
+
+An HTML form might look like this:
+
+```html
+<form action="{{ url_for('hello') }}}" method="post">
+    <input type="text" name="name" placeholder="Enter Your Name">
+    <button>Submit</button>
+<form>
+```
+
+The `action` attribute lists the route that should be ‘notified’ when the form is submitted. In this case, it’s the URL for a function called `hello`.
+
+The `method` attribute is how the HTTP request to submit the form should be made. The default method is `get`, which is what browsers make when a URL is entered. When data is being submitted, however, `post` should be used.
+
+The `name` attribute of the input, while not new, is now relevant because it can be referenced when the form is submitted.
+
+The Python code to process this form might look like this:
+
+```py
+from flask import Flask, render_template, request
+
+# some lines omitted here
+
+@app.route("/hello", methods=["POST"])
+def hello():
+    name = request.form.get("name") # take the request the user made, access the form,
+                                    # and store the field called `name` in a Python variable also called `name`
+    return render_template("hello.html", name=name)
+```
+
+The route `/hello` is the same `hello` listed in the Jinja2 code. This route can also accept the `POST` method, which is how the form’s data is being submitted. If any other method is used to access this route, a `Method Not Allowed` error will be raised.
+
+If there are multiple request methods that should be allowed, which method is being used can be checked with `request.method`, which will be equal to, for example, `"GET"` or `"POST"`.
