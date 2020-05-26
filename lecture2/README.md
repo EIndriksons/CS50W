@@ -84,3 +84,24 @@ This for-loop iterates over `names`, which is a list. Every value in the list is
 for name in names:
     print(name)
 ```
+
+### Functions
+Python has built-in functions, such as `print()` and `input()`, but Python also allows for the creation of user-defined functions.
+
+```py
+def square(x):
+    return x * x
+```
+
+This is a function called `square`, which takes a single argument `x`, and returns the value `x * x`.
+
+Like loops, the body of a function must be indented.
+
+This loop, which prints out the results of `square` with a range of arguments, using an older method for format strings.
+
+```py
+for i in range(10):
+    print("{} squared is {}".format(i, square(i)))
+```
+
+Trying to call a function that hasn’t been defined will raise a `NameError` exception.
