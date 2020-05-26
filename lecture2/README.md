@@ -67,3 +67,20 @@ ages["Alice"] += 1
 ```
 
 **Note** that any sequence in Python can contain any number of data types.
+
+### Loops
+For-loops iterate over their bodies a limited number of times. In this case, the number of iterations is set by `range(5)`.
+
+`range(5)` returns the sequence of numbers starting at 0 through 4. Each value is passed to `i` once, resulting in the loop running a total of 5 times. `i` is normally referred to as an iterator variable.
+
+```py
+for i in range(5):
+    print(i)
+```
+
+This for-loop iterates over `names`, which is a list. Every value in the list is assigned, in order, to the iterator `name` once.
+
+```py
+for name in names:
+    print(name)
+```
