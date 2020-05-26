@@ -123,3 +123,35 @@ if __name__ == "__main__":
 ```
 
 This should be interpreted as saying ‘if this file is currently being run’, execute `main`.
+
+### Classes
+A Python `class` can be thought of as a way to define a new, custom Python data type, somewhat analagous to defining a custom function.
+
+This creates a new `class` called `Point`:
+
+```py
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+```
+
+The `__init__` function is a special function that defines the information needed when a new `Point` is created. `self` is always required, which refers to the `Point` being created, while `x` and `y` are its coordinates.
+
+`self.x` and `self.y` actually do the work of creating `x` and `y` attributes for the `Point` and assigning the m the values passed to `__init__`.
+
+By convention, `class` names tend to start with a capital letter.
+
+This instantiates a new `Point` with `x = 3` and `y = 5`:
+
+```py
+p = Point(3, 5)
+```
+
+When this line is run, the `__init__` function of the `Point` class is automatically run.
+
+To access the `x` attribute of `p`, use dot notation:
+
+```py
+print(p.x)
+```
