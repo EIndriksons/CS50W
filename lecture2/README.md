@@ -105,3 +105,21 @@ for i in range(10):
 ```
 
 Trying to call a function that hasn’t been defined will raise a `NameError` exception.
+
+### Modules
+Modules are separate `.py` files of code, often written by others, used in a new file without rewriting all the old code again. Using modules allows, for example, the use of functions across a program larger than a single file.
+
+Assuming the `square` function in the earlier example was saved in `functions.py`, adding this line atop a new module will allow for the use of `square` there as well.
+
+```py
+from functions import square
+```
+
+If, for example, `functions.py` also included the example loop demonstration of the `square` function, that loop would be executed every time `square` was imported from functions, because the Python interpreter reads through the entire `functions.py` file. To remedy this, code that should only run when their containing file is run directly should be encapsulated in a function, called, for example, `main`. After, the following should be appended:
+
+```py
+if __name__ == "__main__":
+    main()
+```
+
+This should be interpreted as saying ‘if this file is currently being run’, execute `main`.
