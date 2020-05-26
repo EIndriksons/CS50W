@@ -259,3 +259,39 @@ If there are multiple routes on the Flask server, then one route can link to ano
 ```
 
 `more` is the name of a function associated with a route.
+
+#### Template Inheritance
+In order to cut down on repetitive HTML amongst many different pages, Jinja2 has a feature called ‘template inheritance’ that uses the idea of `block`s to organize content.
+
+For example, you could have file called `layout.html` which will contain the main base of the html layout.
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>My Website</title>
+    </head>
+    <body>
+        <h1>{% block heading %}{% endblock %}</h1>
+
+        {% block body %}
+        {% endblock %}
+    </body>
+</html>
+```
+
+Everything in the `heading` block is placed where indicated in `layout.html`, and same for `body`.
+
+```html
+{% extends "layout.html" %}
+
+{% block heading %}
+    First Page
+{% endblock %}
+
+{% block body %}
+    <p>
+        Lorem ipsum dolor sit amet...
+    </p>
+{% endblock %}
+```
