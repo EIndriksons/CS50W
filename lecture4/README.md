@@ -575,3 +575,46 @@ res = requests.get("http://data.fixer.io/api/latest",
 ```
 
 What parameters should be passed into `params` (in this case, `"access_key"`, `"base"` and `"symbols"`) are defined in the API documentation.
+
+### Creating an API
+To implement an API for the recurring example of a airline flight manager, all that needs to be done is to define a route that returns a JSON object, just like Fixer does.
+
+```py
+from flask import Flask, render_template, jsonify, request
+
+# ... other imports, set up code, and routes ...
+
+@app.route("/api/flights/<int:flight_id>")
+def flight_api(flight_id):
+    """Return details about a single flight."""
+
+    # Make sure flight exists.
+    flight = Flight.query.get(flight_id)
+    if flight is None:
+        return jsonify({"error": "Invalid flight_id"}), 422
+
+    # Get all passengers.
+    passengers = flight.passengers
+    names = []
+    for passenger in passengers:
+        names.append(passenger.name)
+    return jsonify({
+            "origin": flight.origin,
+            "destination": flight.destination,
+            "duration": flight.duration,
+            "passengers": names
+        })
+```
+
+The route URL is clearly marked as an API, and takes any flight ID as a parameter.
+
+`jsonify` is a function provided by Flask that takes in a Python dictionary and converts it into JSON.
+
+If there is no flight found, an HTTP status code (422) is also returned with the JSON to indicate an error has occurred.
+
+Seen here again is the readability and simplicity of relationships when retrieving passenger information.
+
+If a valid flight ID was passed as a parameter, then a JSON object with all the flight info and a list of passengers is returned (because no status code is specified, it is set to 200 by default).
+
+### API Keys
+With larger APIs, an often-implemented feature is rate limiting. It is undesirable to have users making a large number of requests that might overload the API or make it harder for other users to access it. To restrict access, users must first obtain an API key (a long string) which must be provided with any API request. Keys allow for the tracking of individual users only allowing, for example, 100 requests per hour per user.
