@@ -132,3 +132,68 @@ f1.add_passenger(bob)
 
 f1.print_info()
 ```
+
+## Object Relational Mapping
+Object-Relational Mapping, or ORM, allows for the combination of the OOP world of Python and the relational database world of SQL. With ORM, Python classes, methods, and objects become the tools for interacting with SQL databases. To do this, the Flask-SQLAlchemy package will be used.
+
+The basic setup, inside `models.py`:
+
+```py
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+class Flight(db.Model):
+    __tablename__ = "flights"
+    id = db.Column(db.Integer, primary_key=True)
+    origin = db.Column(db.String, nullable=False)
+    destination = db.Column(db.String, nullable=False)
+    duration = db.Column(db.Integer, nullable=False)
+
+
+class Passenger(db.Model):
+    __tablename__ = "passengers"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    flight_id = db.Column(db.Integer, db.ForeignKey("flights.id"), nullable=False)
+```
+
+For any table inside of the database, there is one class defined inside `models.py`.
+
+Adding `db.Model` in parentheses after class names indicates that these classes **inherit** from `db.Model`. The details of inheritance are unimportant right now. Simply, this allows for the class to have some built-in relationship with SQLAlchemy to interact with the database.
+
+`__tablename__` naturally corresponds with the table name inside the database.
+
+Every property is defined as a `db.Column`, which will become columns in the table. The arguments to `db.Column` are naturally similar to those used for table creation in SQL.
+
+Note that `flights.id` is marked as a foreign key using the `__tablename__` `flights`, not the class name `Flight`.
+
+
+Now that there’s a defined structure for how the tables should look, they can be created inside a Flask application.
+
+```py
+import os
+
+from flask import Flask, render_template, request
+
+# Import table definitions.
+from models import *
+
+app = Flask(__name__)
+
+# Tell Flask what SQLAlchemy databas to use.
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Link the Flask app with the database (no Flask app is actually being run yet).
+db.init_app(app)
+
+def main():
+    # Create tables based on each table definition in `models`
+    db.create_all()
+
+if __name__ == "__main__":
+    # Allows for command line interaction with Flask application
+    with app.app_context():
+        main()
+```
