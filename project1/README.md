@@ -1,5 +1,7 @@
 # Project 1 - Books
 
+See build log in Trello: [www.trello.com/dev-cs50w-project-1-books](https://trello.com/b/wHIBl0bf/dev-cs50w-project-1-books)
+
 ## Objectives
 - Become more comfortable with Python.
 - Gain experience with Flask.
