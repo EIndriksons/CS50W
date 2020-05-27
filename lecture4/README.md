@@ -518,3 +518,60 @@ def main():
     * `requests.delete(url)`
 * `res.text` is the HTML content of the page that is returned from the request.
 ```
+
+### An Example API
+To demonstrate the potential for these requests, *Fixer*, a foreign exchange rate API, will be used in the following examples.
+
+Accessing the API at the URL `http://data.fixer.io/api/latest?access_key=apikey&base=EUR&symbols=USD` returns the following JSON:
+
+```json
+{
+    "success": true,
+    "timestamp": 1519296206,
+    "base": "EUR",
+    "date": "2018-07-11",
+    "rates": {
+        "USD": 1.177482
+    }
+}
+```
+
+This API can be accessed in Python using the Requests library.
+
+```py
+res = requests.get("http://data.fixer.io/api/latest?access_key=apikey&base=EUR&symbols=USD")
+if res.status_code != 200:
+    raise Exception("ERROR: API request unsuccessful.")
+data = res.json()
+print(data)
+```
+
+```
+* Checking the status code of the HTTP response ensures that the API returned what is expected by the application (a JSON formatted like the one above). As an aside, here are some common HTTP status codes. Generally, a leading 2 indicates a successful response, while a leading 4 indicates a failed request.
+    * `200 OK`
+    * `201 Created`
+    * `400 Bad Request`
+    * `403 Forbidden`
+    * `404 Not Found`
+    * `405 Method Not Allowed`
+    * `422 Unprocessable Entity`
+* `res.json()` simply extracts the JSON response and puts into the Python variable `data`.
+```
+
+The previous returned the entire, raw JSON returned by the API. Since the format of the JSON is consistent and known, the most relevant information can be extracted and displayed.
+
+```py
+rate = data["rates"]["USD"]
+print(f"1 EUR is equal to {rate} USD")
+```
+
+For a little more flexibility on what currencies are being converted, user input can be taken like so:
+
+```py
+base = input("First Currency: ")
+other = input("Second Currency: ")
+res = requests.get("http://data.fixer.io/api/latest",
+                    params={"access_key": apikey, "base": base, "symbols": other})
+```
+
+What parameters should be passed into `params` (in this case, `"access_key"`, `"base"` and `"symbols"`) are defined in the API documentation.
