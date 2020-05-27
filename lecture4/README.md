@@ -197,3 +197,135 @@ if __name__ == "__main__":
     with app.app_context():
         main()
 ```
+
+## Python Versions of SQL Queries
+
+### `CREATE`
+`db.create_all()` is the Python-Flask-SQLAlchemy’s version of the `CREATE` SQL command.
+
+### `INSERT`
+SQL’s `INSERT`…
+
+```sql
+INSERT INTO flights
+    (origin, destination, duration)
+    VALUES ('New York', 'Paris', 540)
+```
+
+…and Python’s `INSERT`.
+
+```py
+  flight = Flight(origin="New York", destination="Paris", duration=540)
+  db.session.add(flight)
+```
+
+SQlAlchemy automatically takes care of SQL transactions with `db.session`.
+
+### `SELECT`
+SQL’s `SELECT`…
+
+```sql
+SELECT * FROM flights;
+SELECT * FROM flights
+    WHERE origin = 'Paris';
+SELECT * FROM flights
+    WHERE origin = 'Paris' LIMIT 1;
+SELECT COUNT(*) FROM flights
+    WHERE origin = 'Paris';
+SELECT * FROM flights WHERE id = 28;
+SELECT * FROM flights
+    ORDER BY origin;
+SELECT * FROM flights
+    ORDER by origin DESC;
+SELECT * FROM flights
+    WHERE origin != 'Paris';
+SELECT * FROM flights
+    WHERE origin LIKE '%a%';
+SELECT * FROM flights
+    WHERE origin IN ('Tokyo', 'Paris');
+SELECT * FROm flights
+    WHERE origin = "Paris"
+    AND duration > 500;
+SELECT * FROm flights
+    WHERE origin = "Paris"
+    AND duration > 500;
+SELECT * FROM flights JOIN passengers
+    ON flights.id = passengers.flight_id;
+```
+
+…and Python’s `SELECT`:
+
+```py
+Flight.query.all()
+Flight.query.fliter_by(origin="Paris").all()
+Flight.query.filter_by(origin="Paris").first()
+Flight.query.filter_by(origin="Paris").count()
+Flight.query.get(28)
+Flight.query.order_by(Flight.origin).all()
+Flight.query.order_by(Flights.origin.desc()).all()
+Flight.query.filter(Flight.origin != "Paris").all()
+Flight.query.filter(Flight.origin.like("%a%")).all()
+Flight.query.filter(Flight.origin.in_(["Tokyo", "Paris"])).all()
+Flight.query.filter(and_(Flight.origin == "Paris", Flight.duration > 500)).all()
+Flight.query.filter(or_(Flight.origin == "Paris", Flight.duration > 500)).all()
+db.session.query(Flight, Passenger).filter(Flight.id == Passenger.flight_id).all()
+```
+
+### `UPDATE`
+SQL’s `UPDATE`…
+
+```sql
+UPDATE flights SET duration = 280
+    WHERE id = 6;
+```
+
+…and Python’s `UPDATE`:
+
+```py
+flight = Flight.query.get(6)
+flight.duration = 280
+```
+
+### `DELETE`
+SQL’s `DELETE`…
+
+```sql
+DELETE FROM flights WHERE id = 28;
+```
+
+…and Python’s `DELETE`:
+
+```py
+flight = Flight.query.get(28)
+db.ksession.delete(flight)
+```
+
+### Other
+Some other miscellaneous SQL commands…
+
+```sql
+COMMIT;
+```
+
+…and their Python parallels.
+
+```py
+db.session.commit()
+```
+
+Before, when importing data from a CSV file, SQL code had to be written directly into the Python file. Now, SQLAlchemy can take care of that behind the scenes.
+
+```py
+import csv
+
+# Same setup code as before.
+
+def main():
+    f = open("flights.csv")
+    reader = csv.reader(f)
+    for origin, destination, duration in reader:
+        flight = Flight(origin=origin, destination=destination, duration=duration)
+        db.session.add(flight)
+        print(f"Added flight from {origin} to {destination} lasting {duration} minutes.")
+    db.session.commit()
+```
