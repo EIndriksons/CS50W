@@ -7,6 +7,8 @@ If you are a student of this course - please see the Course guidelines on [Acade
 ## Table of Contents
 - [Lecture 0](lecture0) - Git
 - [Lecture 1](lecture1) - HTML, CSS
+    * [Project 0](project0) - Homepage
 - [Lecture 2](lecture2) - Flask
 - [Lecture 3](lecture3) - PostgreSQL
 - [Lecture 4](lecture4) - Object Oriented Programming, API's
+    * [Project 1](project1) - Books
