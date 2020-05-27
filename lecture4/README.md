@@ -330,6 +330,43 @@ def main():
     db.session.commit()
 ```
 
+## Relationships
+One more powerful feature of ORMs is the idea of relationships. SQLAlchemy relationships are an easy way to take one table and relate it to another table, such that the each can refer to the other. A relationship is set up with a single line, which in this case would be added to the definition of the `Flight` class.
+
+```py
+passengers = db.relationship("Passenger", backref="flight", lazy=True)
+```
+
+`passengers` is not a column, but rather just a relationship. Given a flight object, the passengers property can be used to extract all the passenger info for that flight.
+
+`backref` creates a relationship in the opposite direction, from `Flight` to `Passenger`.
+
+`lazy` indicates that the information should be fetched only when it’s asked for
+
+With these relationships set up, the code in `application.py` `flight` function to list get all passengers is extremely simplified.
+
+```py
+passengers = flight.passengers
+```
+
+Once again, SQL’s `SELECT`…
+
+```sql
+SELECT * FROM passengers
+    WHERE flight_id = 1
+SELECT * FROM flights JOIN passengers
+    ON flights.id = passengers.flight_id
+    WHERE passengers.name = 'Alice';
+```
+
+…and Python’s relationship-powered `SELECT`
+
+```py
+Flight.query.get(1).passengers
+Passenger.query.filter_by(name="Alice").first().flight
+```
+
+
 ## ORM Integrated into a Web Application
 Putting it all together, here’s the same web application from the end of Lecture 3, using SQLAlchemy. Note that there are no raw SQL commands. The power of ORM, classes, and objects is used to insert and select from the database.
 
