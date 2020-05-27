@@ -133,6 +133,7 @@ f1.add_passenger(bob)
 f1.print_info()
 ```
 
+
 ## Object Relational Mapping
 Object-Relational Mapping, or ORM, allows for the combination of the OOP world of Python and the relational database world of SQL. With ORM, Python classes, methods, and objects become the tools for interacting with SQL databases. To do this, the Flask-SQLAlchemy package will be used.
 
@@ -197,6 +198,7 @@ if __name__ == "__main__":
     with app.app_context():
         main()
 ```
+
 
 ## Python Versions of SQL Queries
 
@@ -330,42 +332,6 @@ def main():
     db.session.commit()
 ```
 
-## Relationships
-One more powerful feature of ORMs is the idea of relationships. SQLAlchemy relationships are an easy way to take one table and relate it to another table, such that the each can refer to the other. A relationship is set up with a single line, which in this case would be added to the definition of the `Flight` class.
-
-```py
-passengers = db.relationship("Passenger", backref="flight", lazy=True)
-```
-
-`passengers` is not a column, but rather just a relationship. Given a flight object, the passengers property can be used to extract all the passenger info for that flight.
-
-`backref` creates a relationship in the opposite direction, from `Flight` to `Passenger`.
-
-`lazy` indicates that the information should be fetched only when it’s asked for
-
-With these relationships set up, the code in `application.py` `flight` function to list get all passengers is extremely simplified.
-
-```py
-passengers = flight.passengers
-```
-
-Once again, SQL’s `SELECT`…
-
-```sql
-SELECT * FROM passengers
-    WHERE flight_id = 1
-SELECT * FROM flights JOIN passengers
-    ON flights.id = passengers.flight_id
-    WHERE passengers.name = 'Alice';
-```
-
-…and Python’s relationship-powered `SELECT`
-
-```py
-Flight.query.get(1).passengers
-Passenger.query.filter_by(name="Alice").first().flight
-```
-
 
 ## ORM Integrated into a Web Application
 Putting it all together, here’s the same web application from the end of Lecture 3, using SQLAlchemy. Note that there are no raw SQL commands. The power of ORM, classes, and objects is used to insert and select from the database.
@@ -446,3 +412,80 @@ flight.add_passenger(name)
 ```
 
 Now, there is on direct creation of passengers in the application. It’s all handled by the `Flight` class.
+
+
+## Relationships
+One more powerful feature of ORMs is the idea of relationships. SQLAlchemy relationships are an easy way to take one table and relate it to another table, such that the each can refer to the other. A relationship is set up with a single line, which in this case would be added to the definition of the `Flight` class.
+
+```py
+passengers = db.relationship("Passenger", backref="flight", lazy=True)
+```
+
+`passengers` is not a column, but rather just a relationship. Given a flight object, the passengers property can be used to extract all the passenger info for that flight.
+
+`backref` creates a relationship in the opposite direction, from `Flight` to `Passenger`.
+
+`lazy` indicates that the information should be fetched only when it’s asked for
+
+With these relationships set up, the code in `application.py` `flight` function to list get all passengers is extremely simplified.
+
+```py
+passengers = flight.passengers
+```
+
+Once again, SQL’s `SELECT`…
+
+```sql
+SELECT * FROM passengers
+    WHERE flight_id = 1
+SELECT * FROM flights JOIN passengers
+    ON flights.id = passengers.flight_id
+    WHERE passengers.name = 'Alice';
+```
+
+…and Python’s relationship-powered `SELECT`
+
+```py
+Flight.query.get(1).passengers
+Passenger.query.filter_by(name="Alice").first().flight
+```
+
+## API's
+An Application Programming Interface, or API, is a protocol for communication between different web applications or different components of the same application. These different components will want to share information with each other or perform actions on other spaces, and APIs allow for this interaction. It is useful, then, to have a standard language for how this communication will occur.
+
+### JSON
+One such language is Javascript Object Notation (JSON), which is a simple way of representing information in human and computer readable way so that it can be passed between parts of web application.
+
+Some example JSON:
+
+```json
+{
+    "origin" : {
+        "city": "Tokyo",
+        "code": "HND"
+    },
+    "destination": {
+        "city": "Shanghai",
+        "code": "PVG"
+    },
+    "duration" : 185,
+    "passengers" : ["Alice", "Bob"]
+}
+```
+
+The curly braces enclose a JSON object.
+
+The contets of the JSON object are dvided into key-value pairs.
+
+`origin` and `duration` are themselves JSON objects, which are nested in a hierarchical structure.
+
+`passengers` shows how lists can be values.
+
+Often times, the interaction between two APIs happens through the URL, which specifics which particular information that should be accessed. Some different levels might be:
+
+```
+/flights/
+/flights/28/
+/flights/28/passengers/
+/flights/28/passengers/6/
+```
