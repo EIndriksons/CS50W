@@ -489,3 +489,32 @@ Often times, the interaction between two APIs happens through the URL, which spe
 /flights/28/passengers/
 /flights/28/passengers/6/
 ```
+
+### HTTP Methods
+Often times, there are different ways an API can be used. For example, one might get information about a passenger, register a new passenger, or change registration information for a flight.
+
+The HTTP request method will correspond to the type of action that should be performed. This is simply a convention that many APIs follow. Some HTTP methods include:
+- `GET` : retrieve a resource
+- `POST` : create a new resource
+- `PUT` : replace a resource
+- `PATCH` : update a resource
+- `DELETE` : delete a resource
+
+The Python *Requests* library allows for all these different HTTP methods to be used.
+
+```py
+import requests
+
+def main():
+    res = requests.get("https://www.google.com/")
+    print(res.text)
+```
+
+```
+* `res` (response) is the HTTP response that comes from submitting, in this case, a `GET` request to a URL. All the following are also valid:
+    * `requests.post(url)`
+    * `requests.put(url)`
+    * `requests.patch(url)`
+    * `requests.delete(url)`
+* `res.text` is the HTML content of the page that is returned from the request.
+```
