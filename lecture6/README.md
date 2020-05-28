@@ -665,3 +665,85 @@ A slight refinement would be to have the rest of the posts slide up to fill the 
 For the first 75% of the animation, the post disappears.
 
 For the final 25% of the animation, the post shrinks in size until it has no height, causing all the other posts below it to fill in that space.
+
+## SVG Animation
+A Scalable Vector Graphic (SVG) is graphical element determined by lines, angles, and shapes. SVGs can be used to draw things that simple HTML elements, like divs, don’t allow for.
+
+```html
+<body>
+    <svg style="width:100%; height:800px">
+        <circle cx="200" cy="200" r="50" style="fill:blue"/>
+    </svg>
+</body>
+```
+
+The SVG element is given a fixed `height` and a `width` that automatically adjusts based on the content to maintain that fixed height.
+
+The `circle` element is one of the SVG elements supported by SVG. It is given x- and y-coordinates for its center with `cx` and `cy`, a radius with `r`, and finally some CSS styling.
+
+As before, it is preferable to be able to create such elements programatically using JavaScript. To do so, a JavaScript data visualization library, D3, will be used.
+
+```html
+<html>
+    <head>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+    </head>
+    <body>
+        <svg id="svg" style="width:100%; height:800px"/>
+    </body>
+    <script>
+
+        const svg = d3.select('#svg');
+
+        svg.append('circle')
+            .attr('cx', 200)
+            .attr('cy', 200)
+            .attr('r', 90)
+            .style('fill', 'green');
+
+    </script>
+</html>
+```
+
+`d3.select` gets access to an HTML element.
+
+Then, D3 functions are used to add a circle to that selected SVG element with all the same attributes and styling as before.
+
+As with CSS, animations can be added to SVGs.
+
+```js
+const svg = d3.select('#svg');
+
+const c = svg.append('circle')
+            .attr('cx', 200)
+            .attr('cy', 200)
+            .attr('r', 50)
+            .style('fill', 'blue');
+
+c.transition()
+.duration(1000)
+.attr('cx', 500)
+.attr('cy', 500)
+.style('fill', 'red');
+```
+
+The duration (in milliseconds) for the `transition` (animation) is given, along with the final values for each attribute that should be animated.
+
+Animations can also delayed or triggered on certain events.
+
+```js
+c.transition()
+.duration(1000)
+.delay(1000)
+.attr('cx', 500);
+
+c.on('click', function() {
+    d3.select(this).transition()
+                    .duration(3000)
+                    .style('fill', 'red');
+});
+```
+
+`delay` specifies the length of time before the animation is run.
+
+`on` takes an event and callback to apply to an SVG. In this case, when the circle is clicked, `this`, whatever was clicked on, undergoes another transition.
