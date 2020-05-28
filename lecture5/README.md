@@ -390,3 +390,155 @@ One last variation of this color example could use a drop-down menu to select co
 `this` refers to whatever value the function is operating on, which in this case is `document.querySelector('#color-change')`, which is the drop-down menu itself. The selected item is extracted using the `value` attribute of the drop-down menu, which corresponds to one of the color options.
 
 Note that using `this` with arrow functions will produce different behavior. `this` inside an arrow function will be bound to whatever value `this` would have taken on inside the code that is enclosing the arrow function. By writing out `function ()`, then `this` takes on the value of whatever the function is being called on.
+
+
+## More with JavaScript
+In the next example, the goal will to be create a to-do list application. Here’s the starting point:
+
+```html
+<html>
+    <head>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+
+                document.querySelector('#new-task').onsubmit = () => {
+
+                    // Create new item for list
+                    const li = document.createElement('li');
+                    li.innerHTML = document.querySelector('#task').value;
+
+                    // Add new item to task list
+                    document.querySelector('#tasks').append(li);
+
+                    // Clear input field
+                    document.querySelector('#task').value = '';
+
+                    // Stop form from submitting
+                    return false;
+                };
+
+            });
+        </script>
+        <title>Tasks</title>
+    </head>
+    <body>
+        <h1>Tasks</h1>
+        <ul id="tasks">
+        </ul>
+        <form id="new-task">
+            <input id="task" autocomplete="off" autofocus placeholder="New Task" type="text">
+            <input type="submit">
+        </form>
+    </body>
+</html>
+```
+
+The `tasks` unordered list starts empty, but will be populated with user input.
+
+In the JavaScript code, when the form is submitted, a new `li` element is assigned to the `const` variable `li` using the function `document.createElement('li')`. Then, the `innerHTML` of that `li` is set to be whatever the `value` of the `task` input field is.
+
+The new `li` is then added to the `ul` `tasks` with the `append(li)` function, called on the `ul`.
+
+Finally, the input field is cleared and the default behavior for a form, which is to go to some other website and reload the page, is suppressed by returning `false`.
+
+Blank submissions can be omitted by conditionally enabling the submit button.
+
+```js
+// By default, submit button is disabled
+document.querySelector('#submit').disabled = true;
+
+// Enable button only if there is text in the input field
+document.querySelector('#task').onkeyup = () => {
+    document.querySelector('#submit').disabled = false;
+
+// ...same code as before...
+
+// Disable button again after submit
+document.querySelector('#submit').disabled = true;
+
+// Stop form from submitting
+return false;
+};
+```
+
+This results in the button only being pressable once some keypress has been registered, assuming that the field is then populated.
+
+The previous implementation would still allow for submission if text was entered and then erased from the form. This can be remedied by checking that the `length` property of the `value` attribute of the form input is indeed greater than 0 after every keystroke.
+
+```js
+// Enable button only if there is text in the input field
+document.querySelector('#task').onkeyup = () => {
+    if (document.querySelector('#task').value.length > 0)
+        document.querySelector('#submit').disabled = false;
+    else
+        document.querySelector('#submit').disabled = true;
+};
+```
+
+Another feature of JavaScript is the ability to wait for a certain amount of time.
+
+```js
+<html>
+    <head>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                setInterval(count, 1000);
+            });
+
+            let counter = 0;
+
+            function count() {
+                counter++;
+                document.querySelector('#counter').innerHTML = counter;
+            }
+        </script>
+    </head>
+    <body>
+        <h1 id="counter">0</h1>
+    </body>
+</html>
+```
+
+The `setInterval` function takes another function and then the interval (in milliseconds), after which the passed function will be automatically called over and over.
+
+The result, in this example, is an automatically incrementing counter without the need for any buttons.
+
+If the previous example were reloaded, the counter would be reset. The maintain some persistence, JavaScript can use local storage to keep track of some state information.
+
+```html
+<html>
+    <head>
+        <script>
+            // Set starting value of counter to 0
+            if (!localStorage.getItem('counter'))
+                localStorage.setItem('counter', 0);
+
+            // Load current value of  counter
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelector('#counter').innerHTML = localStorage.getItem('counter');
+
+                // Count every time button is clicked
+                document.querySelector('button').onclick = () => {
+                    // Increment current counter
+                    let counter = localStorage.getItem('counter');
+                    counter++;
+
+                    // Update counter
+                    document.querySelector('#counter').innerHTML = counter;
+                    localStorage.setItem('counter', counter);
+                }
+            });
+        </script>
+    </head>
+    <body>
+        <h1 id="counter"></h1>
+        <button>Click Here!</button>
+    </body>
+</html>
+```
+
+`localStorage` is the variable that JavaScript can store information at. `getItem` and `setItem` can be called on `localStorage` to either load or save data. This example first tries to load `counter`, and if it’s not there, saves a new `counter` with value `0`.
+
+Then, the `counter` element is initially set to that `counter` item in storage. After that, a variable called `counter` is used to reference the `counter` item, and after every update of the `counter` variable, the `counter` item in `localStorage` has its value updated.
+
+Now, closing and reloading the page will not reset the value of the counter.
