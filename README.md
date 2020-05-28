@@ -12,3 +12,4 @@ If you are a student of this course - please see the Course guidelines on [Acade
 - [Lecture 3](lecture3) - PostgreSQL
 - [Lecture 4](lecture4) - Object Oriented Programming, API's
     * [Project 1](project1) - Books
+- [Lecture 5](lecture5) - JavaScript
