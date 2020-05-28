@@ -545,3 +545,123 @@ Along with a start and end point, midway points can be specified as well.
     }
 }
 ```
+
+## Adding JavaScript
+With CSS alone, animations always run as soon as a webpage is loaded. To control animation, JavaScript can be used to modify the CSS properties `animationPlayState`, which is `paused` or `running`.
+
+```html
+<style>
+    @keyframes move {
+        0% {
+            left: 0%;
+        }
+        50% {
+            left: 50%;
+        }
+        100% {
+            left: 0%;
+        }
+    }
+
+    h1 {
+        position: relative;
+        animation-name: move;
+        animation-duration: 3s;
+        animation-fill-mode: forwards;
+        animation-iteration-count: infinite;
+    }
+    
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const h1 = document.querySelector('h1');
+        h1.style.animationPlayState  = 'paused';
+        document.querySelector('button').onclick = () => {
+            if (h1.style.animationPlayState  === 'paused')
+                h1.style.animationPlayState = 'running';
+            else
+                h1.style.animationPlayState  = 'paused';
+        };
+    });
+</script>
+```
+
+`animation-iteration-count` specifies how many times the animation should be run.
+
+When the page is first loaded, the animation is paused. Then, everytime some button is clicked, the `animationPlayState` is changed.
+
+So far, animation has been purely aesthetic, but it can be a large part of a good user interface. One such situation might be the previous example with a list of posts. When hiding a post, it would helpful to have the post fade away.
+
+```html
+<style>
+
+    @keyframes hide {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+
+    .post {
+        background-color: #77dd11;
+        padding: 20px;
+        margin-bottom: 10px;
+        animation-name: hide;
+        animation-duration: 2s;
+        animation-fill-mode: forwards;
+        animation-play-state: paused;
+    }
+</style>
+<script>
+    // ...rest of JavaScript code...
+
+    // If hide button is clicked, delete the post.
+    document.addEventListener('click', event => {
+        const element = event.target;
+        if (element.className === 'hide') {
+            element.parentElement.style.animationPlayState = 'running';
+            element.parentElement.addEventListener('animationend', () =>  {
+                element.parentElement.remove();
+            });
+        }
+    });
+</script>
+```
+
+There is slightly different logic here to figure out when the button is clicked. Now, anytime a mouse click occurs, the `event.target`, which is the element being clicked, is assigned to the variable `element`.
+
+If the hide button was clicked, the animation is run on the post, and the end of the animation is listened for with a callback to actually delete the post.
+
+A slight refinement would be to have the rest of the posts slide up to fill the gap left by the deleted post. To give this illusion, only the actual post being deleted needs to have its animation modified, not all the posts remaining.
+
+```css
+@keyframes hide {
+    0% {
+        opacity: 1;
+        height: 100%;
+        line-height: 100%;
+        padding: 20px;
+        margin-bottom: 10px;
+    }
+    75% {
+        opacity: 0;
+        height: 100%;
+        line-height: 100%;
+        padding: 20px;
+        margin-bottom: 10px;
+    }
+    100% {
+        opacity: 0;
+        height: 0px;
+        line-height: 0px;
+        padding: 0px;
+        margin-bottom: 0px;
+    }
+}
+```
+
+For the first 75% of the animation, the post disappears.
+
+For the final 25% of the animation, the post shrinks in size until it has no height, causing all the other posts below it to fill in that space.
