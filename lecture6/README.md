@@ -329,3 +329,150 @@ Calling `post.append(hide)` adds the hide button inside the post `div`.
 `parentElement` is the element containing the element in question. In this case, `this.parentElement` is used to refer to the `post` containing the `hide` button.
 
 `remove` is a built-in function to delete an element all together.
+
+## JavaScript Templating
+One issue with using JavaScript to build more complicated user interfaces and adding items to the DOM the code is starting to get a little bit messy. Every element needs to be created, class names need to be assigned, inner HTML needs to be set, etc. Ideally, all the HTML would be written somewhere else, but the exact content that’s going inside is still currently unknown.
+
+The solution to this problem is JavaScript templating, which allows for the creation of templates in JavaScript that define the HTML, while also allowing for substitution inside that template for adding different content. A very simple version of this is JavaScript’s template literals. There many different JavaScript libraries that take that idea one step further. In this class, the **Handlebars** library will be used.
+
+The next series of examples will be a dice-throwing application. Here’s the starting point.
+
+```html
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
+        <script>
+            // Template for roll results
+            const template = Handlebars.compile("<li>You rolled a </li>");
+
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelector('#roll').onclick = ()  => {
+
+                    // Generate a random roll.
+                    const roll = Math.floor((Math.random() * 6) + 1);
+
+                    // Add roll result to DOM.
+                    const content = template({'value': roll});
+                    document.querySelector('#rolls').innerHTML += content;
+                };
+            });
+        </script>
+    </head>
+    <body>
+        <button id="roll">Roll</button>
+        <ul id="rolls">
+        </ul>
+    </body>
+</html>
+```
+
+`template` is being used repeatedly for every roll. It is like a client-side analog to the Flask/Jinja2 templates.
+
+`Math.random()` returns a random number between 0 and 1. Multiplying it by 6 returns a number in the range of 0 up to, but not including, 6. Adding 1 gives a range from 1 up to 7, and using `Math.floor()` will return either 1, 2, 3, 4, 5, or 6.
+
+`template` is used like function: it is passed value(s) and returns HTML content.
+
+It would be nicer to have images of the dice roll rather than just printing out the number. To do so, all that needs to change is the template, which now includes an `img` element.
+
+```js
+const template = Handlebars.compile("<li>You rolled: <img src=\"img/.png\"></li>");
+```
+Note how the `"` characters are escaped, since they are inside a string.
+
+Still, including all of the JavaScript template inside a string starts to get messy when including images, etc. Ideally, there would be pure HTML that is then compiled by Handlebars.
+
+```html
+<script id="result" type="text/x-handlebars-template">
+    <li>
+        You rolled:
+        
+        <img alt="{{ value }}" title="{{ value }}" src="img/{{ value }}.png"></img>
+        
+    </li>
+</script>
+<script>
+    // Template for roll results
+    const template = Handlebars.compile(document.querySelector('#result').innerHTML);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelector('#roll').onclick = ()  => {
+
+            // Generate a random roll.
+            const roll = Math.floor((Math.random() * 6) + 1);
+
+            // Add roll result to DOM.
+            const content = template({'value': roll});
+            document.querySelector('#rolls').innerHTML += content;
+        };
+    });
+</script>
+```
+
+Note that there are two `script` elements. The one with the id `result` which represent the result of a roll. It has a special `type` attribute, defined by Handlebars. Inside of this `script` element will be HTML code that represents the Handlebars template.
+
+The `alt` and `title` attributes of the image simply provide the same information in text when the image is hovered over and for browsers that don’t support images.
+
+Now, instead of compiling a string, the template is simply selected using `document.querySelector`.
+
+Handlebars, like Jinja, supports loops. In this example, loops could be used to roll multiple dice at once.
+
+```html
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
+        <script id="result" type="text/template">
+            <li>
+                You rolled:
+                
+                {{#each values}}
+                    <img alt="{{ this }}" title="{{ this }}" src="img/{{ this }}.png">
+                {{/each}}
+                (Total: {{ total }})
+                
+            </li>
+        </script>
+        <script>
+
+            // Template for roll results
+            const template = Handlebars.compile(document.querySelector('#result').innerHTML);
+
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelector('#roll').onclick = ()  => {
+
+                    // Generate random rolls.
+                    const counter = parseInt(document.querySelector('#counter').value);
+                    const rolls = [];
+                    let total = 0;
+                    for (let i = 0; i < counter; i++) {
+                        const value = Math.floor(Math.random() * 6) +  1;
+                        rolls.push(value);
+                        total += value;
+                    };
+
+                    // Add roll results to DOM.
+                    const content = template({'values': rolls, 'total': total});
+                    document.querySelector('#rolls').innerHTML += content;
+                };
+            });
+        </script>
+    </head>
+    <body>
+        <input id="counter" type="number" placeholder="Number of Rolls" min="1" value="1">
+        <button id="roll">Roll</button>
+        <ul id="rolls">
+        </ul>
+    </body>
+</html>
+```
+
+`#each` is a Handlebars ‘block helper’. There many of these helpers with different functions, be it loops, in this examples, conditionals (`#if`), etc. If the built-in helpers aren’t enough, Handlebars also allows for the creation of custom helpers.
+
+Inside the loop, Handlebars calls every item in the set of items (in this case, the set is called `values`), `this`.
+
+One thing to keep in mind when adding Handlebars templates to Flask apps is that Jinja will scan the HTML file first, and will see the double curly brace syntax as a place where it should plug in a value. Since this is not desired, Jinja needs to be told to ignore the blocks of code with Handlebars templates with Jinja’s `raw` block.
+
+```
+{% raw -%}
+    {{ contents }}
+{%- endraw %}
+```
