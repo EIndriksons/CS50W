@@ -747,3 +747,186 @@ c.on('click', function() {
 `delay` specifies the length of time before the animation is run.
 
 `on` takes an event and callback to apply to an SVG. In this case, when the circle is clicked, `this`, whatever was clicked on, undergoes another transition.
+
+## A Drawing Application
+The final example of a user interface, demonstrating the potential of SVGs, will be a simple sketchpad-like application.
+
+```js
+<body>
+    <svg id="svg" style="width:100%; height:800px"/>
+</body>
+<script>
+
+    const svg = d3.select('#svg');
+
+    function draw_point() {
+        const coords = d3.mouse(this);
+
+        svg.append('circle')
+            .attr('cx', coords[0])
+            .attr('cy', coords[1])
+            .attr('r', 5)
+            .style('fill', 'black');
+    };
+
+    svg.on('mousemove', draw_point);
+
+</script>
+```
+
+Whenever the mouse moves on the canvas, `draw_point` will be called.
+
+`draw_point` simply draws a small circle where the mouse is, grabbing its coordinates with `d3.mouse(this)`.
+
+An obvious improvement would be to only draw when the mouse is clicked.
+
+```js
+const svg = d3.select('#svg');
+let drawing = false;
+
+function draw_point() {
+    if (!drawing)
+        return;
+
+    const coords = d3.mouse(this);
+
+    svg.append('circle')
+        .attr('cx', coords[0])
+        .attr('cy', coords[1])
+        .attr('r', 5)
+        .style('fill', 'black');
+};
+
+svg.on('mousedown', () => {
+    drawing = true;
+});
+
+svg.on('mouseup', () => {
+    drawing = false;
+});
+
+svg.on('mousemove', draw_point);
+```
+
+Now, a boolean variable `drawing` controls whether or not a point should be drawn.
+
+Clicking (`mousedown`) turns on drawing by setting `drawing` to `true`, and releasing `mouseup` turns it off.
+
+The remaining problem is that if the mouse moves too fast, a bunch of unconnected dots will be drawn because the `mousemove` event isn’t fired quickly enough. This frequency cannot be changed, but one workaround would be to draw a line between all points.
+
+First off, a nicer UI would include a list of options to let the user choose pen color, thickness, and also to erase the canvas.
+
+```html
+<body>
+    <div class="container">
+        <div id="options" class="row">
+            <select id="color-picker">
+                <option value="black">Black</option>
+                <option value="red">Red</option>
+                <option value="blue">Blue</option>
+                <option value="green">Green</option>
+            </select>
+            <select id="thickness-picker">
+                <option value=1>1</option>
+                <option value=2>2</option>
+                <option value=3 selected>3</option>
+                <option value=4>4</option>
+                <option value=5>5</option>
+                <option value=6>6</option>
+                <option value=7>7</option>
+                <option value=8>8</option>
+                <option value=9>9</option>
+                <option value=10>10</option>
+            </select>
+            <button id="erase">Erase</button>
+        </div>
+    </div>
+    <svg id="draw">
+    </svg>
+</body>
+```
+
+The more complex JavaScript now takes into account these features.
+
+```js
+document.addEventListener('DOMContentLoaded', () => {
+
+    // state
+    let draw = false;
+
+    // elements
+    let points = [];
+    let lines = [];
+    let svg = null;
+
+    function render() {
+
+        // create the selection area
+        svg = d3.select('#draw')
+                .attr('height', window.innerHeight)
+                .attr('width', window.innerWidth);
+
+        svg.on('mousedown', function() {
+            draw = true;
+            const coords = d3.mouse(this);
+            draw_point(coords[0], coords[1], false);
+        });
+
+        svg.on('mouseup', () =>{
+            draw = false;
+        });
+
+        svg.on('mousemove', function() {
+            if (!draw)
+                return;
+            const coords = d3.mouse(this);
+            draw_point(coords[0], coords[1], true);
+        });
+
+        document.querySelector('#erase').onclick = () => {
+            for (let i = 0; i < points.length; i++)
+                points[i].remove();
+            for (let i = 0; i < lines.length; i++)
+                lines[i].remove();
+            points = [];
+            lines = [];
+        }
+
+    }
+
+    function draw_point(x, y, connect) {
+
+        const color = document.querySelector('#color-picker').value;
+        const thickness = document.querySelector('#thickness-picker').value;
+
+        if (connect) {
+            const last_point = points[points.length - 1];
+            const line = svg.append('line')
+                            .attr('x1', last_point.attr('cx'))
+                            .attr('y1', last_point.attr('cy'))
+                            .attr('x2', x)
+                            .attr('y2', y)
+                            .attr('stroke-width', thickness * 2)
+                            .style('stroke', color);
+            lines.push(line);
+        }
+
+        const point = svg.append('circle')
+                        .attr('cx', x)
+                        .attr('cy', y)
+                        .attr('r', thickness)
+                        .style('fill', color);
+        points.push(point);
+    }
+
+    render();
+});
+```
+
+All points and lines are saved in arrays to allow them to be cleared when the user erases the canvas.
+
+Now, `draw_point` takes three arguments: the coordinates of the point and whether it should be connected to the previous point. It should not be connected when the mouse is clicked for the first time, but it should be connected whenever the mouse is moved.
+
+The `draw_point` function grabs the selected color and thickness, and, if the last point should be connected, it also grabs that point. A line with endpoints at the old point and the mouse location is then drawn and added to the array `lines`.
+
+The point is drawn as before, but also added to the array `points`.
