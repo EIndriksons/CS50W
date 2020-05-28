@@ -244,3 +244,78 @@ Here’s another example which uses JavaScript to read info from a form.
 The callback function here selects the element with the id `form` and sets its `onsubmit` (another event) property to another callback function which sets the `const` variable `name` to the `value` property returned from the elemnt with id `name`. `name` is the input box of a form, so `value` will be whatever the user has entered into the form.
 
 So, this code produces an alert that says hello to whatever name the user entered into the form.
+
+
+## Modifying Style
+JavaScript can also modify the CSS properties of elements.
+
+```html
+<html>
+    <head>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+
+                // Change font color to red
+                document.querySelector('#red').onclick = function() {
+                    document.querySelector('#hello').style.color = 'red';
+                };
+
+                // Change font color to blue
+                document.querySelector('#blue').onclick = function() {
+                    document.querySelector('#hello').style.color = 'blue';
+                };
+
+                // Change font color to green
+                document.querySelector('#green').onclick = function() {
+                    document.querySelector('#hello').style.color = 'green';
+                };
+            });
+        </script>
+    </head>
+    <body>
+        <h1 id="hello">Hello!</h1>
+        <button id="red">Red</button>
+        <button id="blue">Blue</button>
+        <button id="green">Green</button>
+    </body>
+</html>
+```
+
+There are three buttons, each of which (after the initial callback from loading the webpage) have their `onclick` properties set to a function which sets the `style.color` property of the `hello` element to a different color. Any CSS property could be modified, e.g. `style.background-color`, `style.margin`, etc.
+
+The repetitiveness of the last example can be reduced.
+
+```html
+<html>
+    <head>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+
+                // Have each button change the color of the heading
+                document.querySelectorAll('.color-change').forEach(function(button) {
+                    button.onclick = function() {
+                        document.querySelector('#hello').style.color = button.dataset.color;
+                    };
+                });
+
+            });
+        </script>
+    </head>
+    <body>
+        <h1 id="hello">Hello!</h1>
+        <button class="color-change" data-color="red">Red</button>
+        <button class="color-change" data-color="blue">Blue</button>
+        <button class="color-change" data-color="green">Green</button>
+    </body>
+</html>
+```
+
+`document.querySelectorAll('.color-change')` returns an array of all elements of the class `color-change`.
+
+`forEach` is a built-in JavaScript function that can be called on an array that runs a function passed to it on each element of an array. The function being passed takes as an argument one particular element of the array.
+
+Having all three buttons with the same class, `color-change`, allows for them to be selected together with `querySelectorAll`.
+
+`data-color` is a data attribute. Data attributes allow for the association of additional information with an element without changing how the element is rendered by the browser. Data attributes can have any name as long as they start with `data-`.
+
+Data atrributes can be accessed in the dataset property of an element. In this example, `data-color` is accessed in `dataset.color`.
