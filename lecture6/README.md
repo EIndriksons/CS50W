@@ -476,3 +476,72 @@ One thing to keep in mind when adding Handlebars templates to Flask apps is that
     {{ contents }}
 {%- endraw %}
 ```
+
+## CSS Animation
+CSS animation allows for changes from one CSS property to another over some duration of time while the page is running.
+
+```css
+@keyframes grow {
+    from {
+        font-size: 20px;
+    }
+    to  {
+        font-size: 100px;
+    }
+}
+
+
+h1 {
+    animation-name: grow;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+}
+```
+
+`@keyframes grow` defines a CSS animation called `grow`, which goes `from` one style `to` another style.
+
+The `animation-name` property is used to link the `grow` animation to `h1` elements.
+
+`animation-duration` sets the time over which the animation occurs.
+
+`animation-fill-mode` sets the direction the animation should go. The value `forwards` means that once the end of the animation is reached, that final styling should be preserved.
+
+Another simple example:
+
+```css
+@keyframes move {
+    from {
+        left: 0%;
+    }
+    to  {
+        left: 50%;
+    }
+}
+
+h1 {
+    position: relative;
+    animation-name: move;
+    animation-duration: 3s;
+    animation-fill-mode: forwards;
+}
+```
+
+`left` indicates the relative position of an HTML element. `h1` is given the `position: relative` property, which means it position is defined in relationship to other parts of the window.
+
+The `move` animation shifts an element from being 0% away from the left edge of the screen to being 50% away from that edge (aligned with the middle of the window).
+
+Along with a start and end point, midway points can be specified as well.
+
+```css
+@keyframes move {
+    0% {
+        left: 0%;
+    }
+    50% {
+        left: 50%;
+    }
+    100% {
+        left: 0%;
+    }
+}
+```
