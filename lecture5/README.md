@@ -642,3 +642,137 @@ An `XMLHttpRequest` is just an object that will allow an Ajax request to be made
 The rest of the callback simply updates the HTML using template literals to reflect the result of the conversion.
 
 `FormData` is just an object that holds whatever the user input is.
+
+
+## Websockets
+The request-response model, which has been the basis for how HTTP requests and client-server interaction has been discussed so far, is useful as long as data is only being passed when a request is made. But, with **full-duplex communication**, more simply described as real-time communication, there is (or shouldn’t be) a need for reloading a webpage and making a new request just to check, for example, if someone sent a message in a chat room. **Websockets** are a protocol that allow for this type of communication, and *Socket.IO* is a particular JavaScript library that supports this protocol.
+
+This example will be based around a voting application that will count and display votes in real-time. Here’s the full `application.py`, with all the setup and import statements.
+
+```py
+import os
+import requests
+
+from flask import Flask, jsonify, render_template, request
+from flask_socketio import SocketIO, emit
+
+app = Flask(__name__)
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+socketio = SocketIO(app)
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@socketio.on("submit vote")
+def vote(data):
+    selection = data["selection"]
+    emit("announce vote", {"selection": selection}, broadcast=True)
+```
+
+`flask_socketio` is a library that allows for websockets inside a Flask application. This library allows for the web server and client to be emitting events to all other users, while also listening for and receiving events being broadcasted by others.
+
+`submit vote` is an event that will be broadcasted whenever a vote is submitted. The code for this will be in JavaScript.
+
+Once a vote is received, the vote is announced to all users (`broadcast=True`) with the `emit` function.
+
+`index.html`:
+
+```html
+<html>
+    <head>
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+        <script src=""></script>
+        <title>Vote</title>
+    </head>
+    <body>
+        <ul id="votes">
+        </ul>
+        <hr>
+        <button data-vote="yes">Yes</button>
+        <button data-vote="no">No</button>
+        <button data-vote="maybe">Maybe</button>
+    </body>
+</html>
+```
+
+`index.js`:
+
+```js
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Connect to websocket
+    var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+
+    // When connected, configure buttons
+    socket.on('connect', () => {
+
+        // Each button should emit a "submit vote" event
+        document.querySelectorAll('button').forEach(button => {
+            button.onclick = () => {
+                const selection = button.dataset.vote;
+                socket.emit('submit vote', {'selection': selection});
+            };
+        });
+    });
+
+    // When a new vote is announced, add to the unordered list
+    socket.on('announce vote', data => {
+        const li = document.createElement('li');
+        li.innerHTML = `Vote recorded: ${data.selection}`;
+        document.querySelector('#votes').append(li);
+    });
+});
+```
+
+First, the websocket connection is established using a standard line to connect to wherever the application is currently running at.
+
+`submit vote` is the name of the event that’s being submitted on a button click. That event just sends whatever the vote was.
+
+`announce vote` is an event received from the Python sever, which triggers the updating of the vote list.
+
+An improvement to this application would be to display a total vote count, instead of just listing every individual vote, and making sure that new users can see past votes.
+
+Changes to `application.py`:
+
+```py
+votes = {"yes": 0, "no": 0, "maybe": 0}
+
+@app.route("/")
+def index():
+    return render_template("index.html", votes=votes)
+
+@socketio.on("submit vote")
+def vote(data):
+    selection = data["selection"]
+    votes[selection] += 1
+    emit("vote totals", votes, broadcast=True)
+```
+
+Now, any vote submissions are first used to update the `votes` dictionary to keep a record of vote totals. Then, that entire dictionary is broadcasted.
+
+Changes to `index.html`:
+
+```html
+<body>
+    <div>Yes Votes: <span id="yes"></span></div>
+    <div>No Votes: <span id="no"></span></div>
+    <div>Maybe Votes: <span id="maybe"><span></div>
+    <hr>
+    <button data-vote="yes">Yes</button>
+    <button data-vote="no">No</button>
+    <button data-vote="maybe">Maybe</button>
+</body>
+```
+
+The `span` elements allocate a space for vote tallies to be filled in later.
+
+Changes to `index.js`:
+
+```js
+socket.on('vote totals', data => {
+    document.querySelector('#yes').innerHTML = data.yes;
+    document.querySelector('#no').innerHTML = data.no;
+    document.querySelector('#maybe').innerHTML = data.maybe;
+});
+```
