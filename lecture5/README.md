@@ -319,3 +319,74 @@ Having all three buttons with the same class, `color-change`, allows for them to
 `data-color` is a data attribute. Data attributes allow for the association of additional information with an element without changing how the element is rendered by the browser. Data attributes can have any name as long as they start with `data-`.
 
 Data atrributes can be accessed in the dataset property of an element. In this example, `data-color` is accessed in `dataset.color`.
+
+
+## Arrow Functions
+Since functions, especially anonymous functions, are so common in JavaScript, ES6 has introduced a new syntax for functions called arrow notation that allows for the definition of so-called arrow functions.
+
+```js
+() => {
+    alert('Hello, world!');
+}
+
+x => {
+    alert(x);
+}
+
+x => x * 2;
+```
+
+An arrow function is defined without using the word `function`, but rather just with a pair of parentheses enclosing any arguments the function takes, followed by an arrow, and finally the function body, enclosed in curly braces.
+
+Functions with only one argument can be defined without the use of parentheses enclosing the argument list.
+
+Functions that have only one line in the body can drop the curly braces and have the body on the same line as the argument list and arrow.
+
+The previous example could be rewritten more succintly with arrow functions.
+
+```js
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Have each button change the color of the heading
+    document.querySelectorAll('.color-change').forEach(button => {
+        button.onclick = () => {
+            document.querySelector('#hello').style.color = button.dataset.color;
+        };
+    });
+
+});
+```
+
+One last variation of this color example could use a drop-down menu to select colors instead of buttons.
+
+```html
+<html>
+    <head>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+
+                // Change the color of the heading when dropdown changes
+                document.querySelector('#color-change').onchange = function() {
+                    document.querySelector('#hello').style.color = this.value;
+                };
+
+            });
+        </script>
+    </head>
+    <body>
+        <h1 id="hello">Hello!</h1>
+        <select id="color-change">
+            <option value="black">Black</option>
+            <option value="red">Red</option>
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+        </select>
+    </body>
+</html>
+```
+
+`onchange` is the event fired when the selection in a drop-down menu is changed.
+
+`this` refers to whatever value the function is operating on, which in this case is `document.querySelector('#color-change')`, which is the drop-down menu itself. The selected item is extracted using the `value` attribute of the drop-down menu, which corresponds to one of the color options.
+
+Note that using `this` with arrow functions will produce different behavior. `this` inside an arrow function will be bound to whatever value `this` would have taken on inside the code that is enclosing the arrow function. By writing out `function ()`, then `this` takes on the value of whatever the function is being called on.
