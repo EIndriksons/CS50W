@@ -542,3 +542,103 @@ If the previous example were reloaded, the counter would be reset. The maintain 
 Then, the `counter` element is initially set to that `counter` item in storage. After that, a variable called `counter` is used to reference the `counter` item, and after every update of the `counter` variable, the `counter` item in `localStorage` has its value updated.
 
 Now, closing and reloading the page will not reset the value of the counter.
+
+
+## Integrating JavaScript with Python and Flask
+Ajax, is used to get more information from server without needing to reload an entirely new page. As an example, Ajax can be used with the currency conversion example from last week to display a conversion without needing to load a new page. This is not done by pre-loading all possible exchange rates, but by making an Ajax request to the Flask server, which will get a particular exchange rate whenever it is asked for. JavaScript can then be used to update the DOM to render the new content.
+
+Here’s the interesting part of `application.py`. There’s not much different here from last week, but note that what’s being returned is not a new webpage, but rather just a JSON object.
+
+```py
+@app.route("/convert", methods=["POST"])
+def convert():
+
+    # Query for currency exchange rate
+    currency = request.form.get("currency")
+    res = requests.get("https://api.fixer.io/latest", params={
+        "base": "USD", "symbols": currency})
+
+    # Make sure request succeeded
+    if res.status_code != 200:
+        return jsonify({"success": False})
+
+    # Make sure currency is in response
+    data = res.json()
+    if currency not in data["rates"]:
+        return jsonify({"success": False})
+
+    return jsonify({"success": True, "rate": data["rates"][currency]})
+```
+
+The HTML is simply a basic form. The JavaScript code is in a different file, but linked in the `head`.
+
+```html
+<html>
+    <head>
+        <script src="{url_for('static', filename='index.js')}"></script>
+        <title>Currency Converter</title>
+    </head>
+    <body>
+        <form id="form">
+            <input id="currency" autocomplete="off" autofocus placeholder="Currency" type="text">
+            <input type="submit" value="Get Exchange Rate">
+        </form>
+        <br>
+        <div id="result"></div>
+    </body>
+</html>
+```
+
+`url_for('static', filename='index.js')` is Flask’s way of incorporating `.js` files. `static` is a separate folder.
+
+The `result` `div` will contain the conversion, but is currently blank.
+
+The interesting code is inside of `index.js`.
+
+```js
+document.addEventListener('DOMContentLoaded', () => {
+
+    document.querySelector('#form').onsubmit = () => {
+
+        // Initialize new request
+        const request = new XMLHttpRequest();
+        const currency = document.querySelector('#currency').value;
+        request.open('POST', '/convert');
+
+        // Callback function for when request completes
+        request.onload = () => {
+
+            // Extract JSON data from request
+            const data = JSON.parse(request.responseText);
+
+            // Update the result div
+            if (data.success) {
+                const contents = `1 USD is equal to ${data.rate} ${currency}.`
+                document.querySelector('#result').innerHTML = contents;
+            }
+            else {
+                document.querySelector('#result').innerHTML = 'There was an error.';
+            }
+        }
+
+        // Add data to send with request
+        const data = new FormData();
+        data.append('currency', currency);
+
+        // Send request
+        request.send(data);
+        return false;
+    };
+
+});
+```
+
+An `XMLHttpRequest` is just an object that will allow an Ajax request to be made.
+
+`request.open` is where the new request is actually initialized, with the HTTP method and route being specified.
+
+`JSON.parse` converts the raw response (`request.responseText`) into an object that can be indexed by keys and values.
+
+The rest of the callback simply updates the HTML using template literals to reflect the result of the conversion.
+
+`FormData` is just an object that holds whatever the user input is.
