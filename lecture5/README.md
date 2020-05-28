@@ -168,3 +168,79 @@ Going one step further, the JavaScript code can be factored out of the `.html` f
 ```
 
 This is exactly the same paradigm that was seen in factoring out CSS.
+
+## Variables
+There are three main keywords used to define variables in JavaScript.
+- `const` : defines a constant variable that cannot be redefined later
+- `let` : defines a variable is local to the scope of the innermost pair of curly braces surrounding it
+- `var` : defines a variable that is local to the function it is defined in
+
+Here is an example showcasing these different ways to define variables:
+
+```html
+<script>
+    // This variable exists even outside the loop
+    if (true) {
+        var message = 'Hello!';
+    }
+
+    alert(message);
+</script>
+```
+
+Because `var` was used to define `message`, there will be no errors running this code.
+
+```html
+<script>
+// This variable does not exist outside the loop
+if (true) {
+    let message = 'Hello!';
+}
+
+alert(message);
+</script>
+```
+
+Because `let` was used to define `message`, it cannot be passed to `alert`, which is outside the scope of `message`. If this were in an HTML page, when the page was opened, no alert would pop up. If the console were opened in the browser, there would be an `Uncaught ReferenceError`.
+
+```html
+<script>
+// The value of const variables cannot change
+const message = 'Hello!';
+message = 'Goodbye!';
+
+alert(message);
+</script>
+```
+
+Similar to the last example, no alert will pop up. In the console, there would be an `Uncaught TypeError`, since there was an attempt to redefine a variable defined with `const`.
+
+
+The JavaScript console, accessable in the **Develop** or **Inspect** menu in a web browser, allows for the interactive entry of JavaScript, similiar to the Python console.
+
+Here’s another example which uses JavaScript to read info from a form.
+
+```html
+<html>
+    <head>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelector('#form').onsubmit = function() {
+                    const name = document.querySelector('#name').value;
+                    alert(`Hello ${name}!`);
+                };
+            });
+        </script>
+    </head>
+    <body>
+        <form id="form">
+            <input id="name" autocomplete="off" autofocus placeholder="Name" type="text">
+            <input type="submit">
+        </form>
+    </body>
+</html>
+```
+
+The callback function here selects the element with the id `form` and sets its `onsubmit` (another event) property to another callback function which sets the `const` variable `name` to the `value` property returned from the elemnt with id `name`. `name` is the input box of a form, so `value` will be whatever the user has entered into the form.
+
+So, this code produces an alert that says hello to whatever name the user entered into the form.
