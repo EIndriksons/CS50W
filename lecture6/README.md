@@ -115,3 +115,58 @@ In order to process this structure, JavaScript must be added to `index.html`.
 `load_page` makes an AJAX request to the server to get the text that should be displayed and puts in the `body` `div`.
 
 This new single-page implementation avoids reloading the page repeatedly just to display very similar content (e.g. the same navigation bar). However, this eliminates the URL’s functionality as a locator, because all the content is on the same route.
+
+## HTML5 History API
+The HTMuL5 History API allows for the manipulation of a browser’s history and URL even if the page is still being implemented with a single-page design. Whenever an new **page** is accessed, the client can **push** a new URL state.
+
+The changes to the JavaScript code are inside the load_page function.
+
+```js
+function load_page(name) {
+    const request = new XMLHttpRequest();
+    request.open('GET', `/${name}`);
+    request.onload = () => {
+        const response = request.responseText;
+        document.querySelector('#body').innerHTML = response;
+
+        // Push state to URL.
+        document.title = name;
+        history.pushState(null, name, name);
+    };
+    request.send();
+}
+```
+
+`document.title` is just an aesthetic property that is set to reflect the current page.
+
+In the `history.pushState()` function, which is used to change the browser’s history, the first argument is any data that should be associated with the push, the second argument is the title of the page being pushed, and the third argument is the URL being pushed.
+
+One flaw with this, though, is that the full multi-page behavior is not truly being emulated. If a user tries to use the back button in their browser, the URL will change, but not the content. To remedy this, the full, stack-like behavior of the HTML5 History API can be used. Going back in history should just **pop** whatever the URL is on top off of the stack.
+
+```js
+// Renders contents of new page in main view.
+function load_page(name) {
+    const request = new XMLHttpRequest();
+    request.open('GET', `/${name}`);
+    request.onload = () => {
+        const response = request.responseText;
+        document.querySelector('#body').innerHTML = response;
+
+        // Push state to URL.
+        document.title = name;
+        history.pushState({'title': name, 'text': response}, name, name);
+    };
+    request.send();
+}
+
+// Update text on popping state.
+window.onpopstate = e => {
+    const data = e.state;
+    document.title = data.title;
+    document.querySelector('#body').innerHTML = data.text;
+};
+```
+
+Now, when pushing a new state, title and text data is being pushed with it.
+
+When the state is popped, `e`, the event that just took place, has a `state` property that contains all the data that was pushed with that state. Then, that data is just used to update the contents of the page as expected.
