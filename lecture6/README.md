@@ -170,3 +170,162 @@ window.onpopstate = e => {
 Now, when pushing a new state, title and text data is being pushed with it.
 
 When the state is popped, `e`, the event that just took place, has a `state` property that contains all the data that was pushed with that state. Then, that data is just used to update the contents of the page as expected.
+
+## Window and Document
+The `window` and `document` variables, which have been seen in past examples, are just examples of JavaScripts objects on which operations can be performed and that have properties that can be accessed. In particular, they contain information about their size and position.
+
+- `window.innerWidth` : window width
+- `window.innerHeight` : window height
+- `document.body.offsetHeight` : the entire height of the HTML body’s document, of which the window height is likely just a small porition
+- `window.scrollY` : how far down the page has been scrolled (in pixels)
+
+One potential use of these properties is to be able to detect if the user has scrolled to the bottom of the page.
+
+```js
+window.onscroll = () => {
+    console.log('----');
+    console.log(window.innerHeight);
+    console.log(window.scrollY);
+    console.log(document.body.offsetHeight);
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+        document.querySelector('body').style.background = 'green';
+    } else {
+        document.querySelector('body').style.background = 'white';
+    }
+};
+```
+
+`console.log` is essentially a print statement that prints to the web browsers’s console.
+
+All this does is change the background color of the web page to green when the bottom of the document has been reached, which is detected using the mathematical relationship between `window` and `document` properties.
+
+A more useful application of this bottom-detection would be the dynamic loading of more content when the bottom of a webpage has been reached. `application.py` for such a webpage could look like this.
+
+```py
+import time
+
+from flask import Flask, jsonify, render_template, request
+
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/posts", methods=["POST"])
+def posts():
+
+    # Get start and end point for posts to generate.
+    start = int(request.form.get("start") or 0)
+    end = int(request.form.get("end") or (start + 9))
+
+    # Generate list of posts.
+    data = []
+    for i in range(start, end + 1):
+        data.append(f"Post #{i}")
+
+    # Artificially delay speed of response.
+    time.sleep(1)
+
+    # Return list of posts.
+    return jsonify(data)
+```
+
+`index.html` (a little more complex now):
+
+```html
+<html>
+    <head>
+        <script>
+            // Start with first post.
+            let counter = 1;
+
+            // Load posts 20 at a time.
+            const quantity = 20;
+
+            // When DOM loads, render the first 20 posts.
+            document.addEventListener('DOMContentLoaded', load);
+
+            // If scrolled to bottom, load the next 20 posts.
+            window.onscroll = () => {
+                if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+                    load();
+                }
+            };
+
+            // Load next set of posts.
+            function load() {
+
+                // Set start and end post numbers, and update counter.
+                const start = counter;
+                const end = start + quantity - 1;
+                counter = end + 1;
+
+                // Open new request to get new posts.
+                const request = new XMLHttpRequest();
+                request.open('POST', '/posts');
+                request.onload = () => {
+                    const data = JSON.parse(request.responseText);
+                    data.forEach(add_post);
+                };
+
+                // Add start and end points to request data.
+                const data = new FormData();
+                data.append('start', start);
+                data.append('end', end);
+
+                // Send request.
+                request.send(data);
+            };
+
+            // Add a new post with given contents to DOM.
+            function add_post(contents) {
+
+                // Create new post.
+                const post = document.createElement('div');
+                post.className = 'post';
+                post.innerHTML = contents;
+
+                // Add post to DOM.
+                document.querySelector('#posts').append(post);
+            };
+        </script>
+    </head>
+    <body>
+        <div id="posts">
+        </div>
+    </body>
+</html>
+```
+
+For a little more functionality, the `add_post` function could be modified to add a button to hide uninteresting posts.
+
+```js
+function add_post(contents) {
+
+    // Create new post.
+    const post = document.createElement('div');
+    post.className = 'post';
+    post.innerHTML = contents;
+
+    // Add button to hide post.
+    const hide = document.createElement('button');
+    hide.className = 'hide';
+    hide.innerHTML = 'Hide';
+    post.append(hide);
+
+    // When hide button is clicked, remove post.
+    hide.onclick = function() {
+        this.parentElement.remove();
+    };
+
+    // Add post to DOM.
+    document.querySelector('#posts').append(post);
+};
+```
+
+Calling `post.append(hide)` adds the hide button inside the post `div`.
+
+`parentElement` is the element containing the element in question. In this case, `this.parentElement` is used to refer to the `post` containing the `hide` button.
+
+`remove` is a built-in function to delete an element all together.
