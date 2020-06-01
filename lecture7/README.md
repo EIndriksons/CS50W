@@ -225,3 +225,52 @@ f.id
 f.delete()
 # Deletes the flight as expected
 ```
+
+### Better Models
+A more robust design for the `Flight` model would have an id field that links to a table of airports instead of just text for origins and destinations. To do so, a new `Airport` model must first be created.
+
+```py
+class Airport(models.Model):
+    code = models.CharField(max_length=3)
+    city = models.CharField(max_length=64)
+
+    def __str__(self):
+        return f"{self.city} ({self.code})"
+```
+
+Then, the `Flight` model can be modified appropriately, with origin and destination being `ForeignKey`s.
+
+```py
+class Flight(models.Model):
+    origin = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="departures")
+    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="arrivals")
+```
+
+Django models allow for specific behavior when an airport, for instance, is deleted. `on_delete=models.CASCADE` means that if an airport is deleted, all flights with that airport as an origin or destination will be deleted as well.
+
+`related_name` allows for the accessing of all flights departing from or arriving at a particular airport, using the keys `deparatures` or `arrivals`.
+
+Note that there is no literal definitions of origin and destination as IDs, nor any actual commands for how to associate the two tables. The only things specified is that `origin` and `destination` should be `Airports`. All of the work to make that happen is left to Django.
+
+To apply these changes, they must be migrated in the same fashion as before. Now, in the shell, it’s a lot easier and more intuitive to create flights.
+
+```py
+from flights.models import Airport, Flight
+
+jfk = Airport(code="JFK", city="New York City")
+lhr = Airport(code="LHR", city="London")
+jfk.save()
+lhr.save()
+
+f = Flight(origin=jfk, destination=lhr, duration=415)
+f.save()
+
+f.origin
+# Returns <Airport: New York City (JFK)>
+
+f.origin.code
+# Returns 'JFK'
+
+jfk.departures.all()
+# Returns <QuerySet [<Flight: 1 - New York City (JFK) to London (LHR)>]>
+```
