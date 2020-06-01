@@ -634,6 +634,7 @@ Although the booking functionality looks nearly complete, when the registration 
 
 When the form is submitted, a CSRF token is submitted with it to allow Django to verify that is indeed the same web application is submitting the request.
 
+
 ## Modifying Admin
 Django’s admin interface can be extended to allow for custom behavior. Returning to the flights example, here’s how `flights/admin.py` could be modified.
 
@@ -671,6 +672,7 @@ Because the `Flights` model does not have a reference to `Passengers`, managing 
 
 `filter_horizontal` helps to manipulate what flights a passenger is on. It simply allows for an additional UI element on the admin app to make it easy to add or remove flights that a passenger is on.
 
+
 ## Static Files
 To use external static files, like `.css` or `.js` files, some special Django syntax has to be used. A base template with static files might look like this:
 
@@ -692,3 +694,109 @@ To use external static files, like `.css` or `.js` files, some special Django sy
 
 `{% load static %}` allows for the use of static files.
 Any static file must have its `href` formattaed as `"{% static 'path/static.css' %}"`. * Inside of the application directory (e.g. `flights`), there should be a `static` directory containing a directory for the application which in turn contains any static files. So, the entire hierarchy would look like `flights/static/flights/styles.css`. This is exactly analogous to how templates are stored.
+
+
+## Login and Authentication
+Authentication and Authorization is a built-in app designed to handle users accounts and log-in functionality. This last example features this account system in an app called `users`. `users/urls.py` looks like this:
+
+```py
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path("", views.index, name="index"),
+    path("login", views.login_view, name="login"),
+    path("logout", views.logout_view, name="logout")
+```
+
+`users/views.py`:
+
+```py
+from django.contrib.auth import authenticate, login, logout
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
+from django.urls import reverse
+
+# Create your views here.
+
+def index(request):
+    if not request.user.is_authenticated:
+        return render(request, "users/login.html", {"message": None})
+    context = {
+        "user": request.user
+    }
+    return render(request, "users/user.html", context)
+
+def login_view(request):
+    username = request.POST["username"]
+    password = request.POST["password"]
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        return HttpResponseRedirect(reverse("index"))
+    else:
+        return render(request, "users/login.html", {"message": "Invalid credentials."})
+
+def logout_view(request):
+    logout(request)
+    return render(request, "users/login.html", {"message": "Logged out."})
+```
+
+`django.contrib.auth` is Django’s authentication package, which contains the `User` model, along with the functions `authenticate`, `login`, and `logout`.
+
+`request.user.is_authenticated` is `true` if the user has logged in. If they aren’t logged in, they are redirected to the login page. If they are, the user is directed to their user page.
+
+`login_view` first checks that a user exists with `authenticate`, which takes the user’s username and password and returns that user object.
+
+`login` takes a user and logs them into the authentication system.
+
+`logout` simply logs the user out.
+
+
+`login.html`:
+
+```html
+{% block body %}
+<h1>Login</h1>
+{% if message %}
+    <div>
+        {{ message }}
+    </div>
+{% endif %}
+<form action="{% url 'login' %}" method="post">
+    {% csrf_token %}
+    <input name="username" type="text"/>
+    <input name="password" type="password"/>
+    <input type="submit" value="Login"/>
+</form>
+{% endblock %}
+```
+
+`user.html`:
+
+```html
+{% block body %}
+<h1>Hello, {{ user.first_name }}</h1>
+<ul>
+    <li>Currently logged in as: {{ user.username }}</li>
+    <li><a href="{% url 'logout' %}">Logout</a></li>
+</ul>
+{% endblock %}
+```
+
+The `User` contains fields such as `first_name`, `last_name`, `username`, etc., but can also be extended.
+
+Registering a new user entails adding a new user to the database. This can be done through the admin interface with a superuser account or using the shell:
+
+```py
+from django.contrib.auth.models import User
+
+user = User.objects.create_user("alice", "alice@something.com", "alice12345")
+
+user.first_name = "Alice"
+
+user.save()
+```
+
+`create_user` takes the arguments username, e-mail, password.
