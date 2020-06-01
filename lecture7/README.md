@@ -452,3 +452,78 @@ and
 
 {% endblock %}
 ```
+
+### Model Relationships
+Before, with Flask and SQL, in order to link passengers to flights, there was an flight ID column in the passenger table so that each passenger can be associated with a flight. The problem with this approach is that each passenger can only be on a single flight. What is more desirable is a **many-to-many** relationship, in which a passenger can be on multiple flights and a flight can have multiple passengers. A common paradigm for this is to implement an **in-between table**, which simply has two columns, one for a passenger ID and one for a flight ID, with as many rows as are necessary. Django allows for this, but does the work of implementing the in-between table automatically.
+
+The first step is to implement a passenger model in `flights/models.py`.
+
+```py
+class Passenger(models.Model):
+    first = models.CharField(max_length=64)
+    last = models.CharField(max_length=64)
+    flights = models.ManyToManyField(Flight, blank=True, related_name="passengers")
+
+    def __str__(self):
+        return f"{self.first} {self.last}"
+```
+
+Before, when associating two tables, `models.ForeignKey` was used. `models.ManyToManyField` allows for the desired behavior of a many-to-many relationship.
+
+`blank=True` allows for a passenger to be be associated with no flights.
+
+Like before, `related_name` allows for the querying of all passengers on a given flight.
+
+Updating the database as before, with `python manage.py makemigrations` and inspecting the SQL with `python manage.py sqlmigrate flights 0003` reveals code for creating a table `flights_passengers`, as specified, but also a table `flights_passengers_flights`, which was not specified, but is the in-betweent table that was automatically generated.
+
+After finishing the migration with `python manage.py migrate`, the shell can be used to try out these new models.
+
+```py
+from flights.models import Flight, Passenger
+
+f = Flight.objects.get(pk=1)
+f
+# Returns <Flight: 1 - New York City (JFK) to London (LHR)>
+
+p = Passenger(first="Alice", last="Adams")
+p.save()
+
+p.flights.add(f)
+p.flights.all()
+# Returns <QuerySet [<Flight: 1 - New York City (JFK) to London (LHR)>]>
+
+f.passengers.all()
+# Returns <QuerySet [<Passenger: Alice Adams>]>
+```
+
+The `flight` view and its corresponding HTML can be updated to now display passenger info.
+
+```py
+def flight(request, flight_id):
+    try:
+        flight = Flight.objects.get(pk=flight_id)
+    except Flight.DoesNotExist:
+        raise Http404("Flight does not exist")
+    context = {
+        "flight": flight,
+        "passengers": flight.passengers.all(),
+    }
+    return render(request, "flights/flight.html", context)
+```
+
+and
+
+```html
+<h2>Passengers</h2>
+<ul>
+    {% for passenger in passengers %}
+        <li>{{ passenger }}</li>
+    {% empty %}
+        <li>No passengers</li>
+    {% endfor %}
+</ul>
+```
+
+`{% empty %}` executes if passengers is empty.
+
+The `Passenger` model can also be added to admin and modified on the admin application in the same was before.
