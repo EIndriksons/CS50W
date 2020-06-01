@@ -274,3 +274,55 @@ f.origin.code
 jfk.departures.all()
 # Returns <QuerySet [<Flight: 1 - New York City (JFK) to London (LHR)>]>
 ```
+
+## Rendering Templates
+Similar to Flask, in order to render an HTML template, the rendered template should be returned by the function which handles a route. For Django, that’s in `flights/views.py`.
+
+```py
+def index(request)
+    return render(request, "flights/index.html")
+```
+
+The second argument to `render` is simply the path to the template to be rendered.
+
+These should be stored in a path like so: `flights/templates/flights/index.html`. Note that `render` takes a path starting from the `template` folder. The apparent redudancy of this path, although not strictly necessary in this example, is good practice to avoid issues where multiples applications might have their own `index.html`.
+
+`index.html` can be simple for now:
+
+```html
+<html>
+    <head>
+        <title>Flights</title>
+    </head>
+    <body>
+        <h1>Flights</h1>
+    </body>
+</html>
+```
+
+To display information about flights, Django’s templating system, which is very similar to Jinja, can be used. Django passes information into a template via the `context` dictionary.
+
+```py
+from .models import Flight
+
+def index(request)
+    context = {
+        "flights": Flights.objects.all()
+    }
+    return render(request, "flights/index.html", context)
+```
+
+```html
+<body>
+    <h1>Flights</h1>
+    <ul>
+        
+        {% for flight in flights %}
+            <li>
+                {{ flight }}
+            </li>
+        {% endfor %}
+        
+    </ul>
+</body>
+```
