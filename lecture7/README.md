@@ -176,3 +176,52 @@ The command `python manage.py sqlmigrate flights 0001` will produce the SQL code
 To actually apply this migration to the database, run `python manage.py migrate`, which will apply the new migration as well as some default Django ones.
 
 The database that is actually being used here is defined in `djangoair/settings.py` in the `DATABASES` dictionary. By default, it uses a SQLite 3 (another version of SQL that uses a local file for a database) and the database file `db.sqlite3`.
+
+### Django Shell
+Django provides a shell, similar to Python’s interpreter, that allows for direct modification of the database. Start the shell by running `python manage.py shell`. Inside the shell, Python commands can be run.
+
+To create a new flight, the following commands can be run inside the shell.
+
+```py
+from flights.models import Flight
+
+f = Flight(origin="New York", destination="London", duration=415)
+f.save()
+
+Flight.objects.all()
+# Returns <QuerySet [<Flight: Flight object(1)>]>
+```
+
+`f.save()` is analogous to SQL’s `COMMIT`.
+
+A `QuerySet` is like a list, with added functionality.
+
+The representation of the `QuerySet` that the shell returns isn’t really readable or helpful. To produce a more useful, string representation of a flight, a `__str__` function can be added to `Flight` class in `flights/models.py`.
+
+```py
+def __str__(self):
+    return f"{self.id} - {self.origin} to {self.destination}"
+```
+
+For any class, not just in Django, a `__str__` function defines what an object should like look when printed, whether to a terminal, an HTML page, etc.
+
+Back to the shell:
+
+```py
+Flight.objects.all()
+# Returns <QuerySet [<Flight: 1 - New York to London>]>
+
+f = Flight.objects.first()
+
+f
+# Returns <Flight: 1 - New York to London>
+
+f.origin()
+# Returns 'New York'
+
+f.id
+# Returns 1
+
+f.delete()
+# Deletes the flight as expected
+```
