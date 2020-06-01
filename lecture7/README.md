@@ -1,8 +1,10 @@
 # Lecture 7 - Django
 Django is a much heavier weight web framework than Flask with a lot more out-of-the-box features that would’ve had to be built up manually and repetitively with a micro-framework like Flask.
 
+
 ## Using Django
 Django divides all of its web applications into **projects**, composed of different parts. To start a new project, run `django-admin startproject projectname`.
+
 
 ### Project Components
 Django creates a number of files with a new project:
@@ -15,6 +17,7 @@ Django creates a number of files with a new project:
 - `project_name/` : the directory for the project that contains all of the above files by default
 
 A Django project consists of one or more Django applications, or apps, which serves a particular purpose.
+
 
 ## A Basic Application
 To create an app, inside the project directory, run `python manage.py startapp appname`. This will create a directory `appname` inside of the project directory. `appname` will contain a number of files automatically.
@@ -80,6 +83,7 @@ The reason for this apparent complexity is to allow for routing amongst multiple
 
 To run the application, run `python manage.py runserver`.
 
+
 ## Flights Revisited
 To demonstrate Django more completely, the next example will reconstruct and expand upon the flight manager application that was originally built with Flask. The project name will be `djangoair`, and it will contain an application called `flights`.
 
@@ -135,6 +139,7 @@ Now, as with new URLs, the models must be linked to the Django project. In `djan
 
 `FlightsConfig` is the class the defines the settings for the `flights` application.
 
+
 ### Migrations
 When building a web application, very rarely will all the tables be defined with all the correct columns from the beginning. Usually, tables are built up as the application grows, and the database will be modified. It would be tedious to change both the Django model code and run the SQL commands to modify the database.
 
@@ -176,6 +181,7 @@ The command `python manage.py sqlmigrate flights 0001` will produce the SQL code
 To actually apply this migration to the database, run `python manage.py migrate`, which will apply the new migration as well as some default Django ones.
 
 The database that is actually being used here is defined in `djangoair/settings.py` in the `DATABASES` dictionary. By default, it uses a SQLite 3 (another version of SQL that uses a local file for a database) and the database file `db.sqlite3`.
+
 
 ### Django Shell
 Django provides a shell, similar to Python’s interpreter, that allows for direct modification of the database. Start the shell by running `python manage.py shell`. Inside the shell, Python commands can be run.
@@ -226,6 +232,7 @@ f.delete()
 # Deletes the flight as expected
 ```
 
+
 ### Better Models
 A more robust design for the `Flight` model would have an id field that links to a table of airports instead of just text for origins and destinations. To do so, a new `Airport` model must first be created.
 
@@ -274,6 +281,7 @@ f.origin.code
 jfk.departures.all()
 # Returns <QuerySet [<Flight: 1 - New York City (JFK) to London (LHR)>]>
 ```
+
 
 ## Rendering Templates
 Similar to Flask, in order to render an HTML template, the rendered template should be returned by the function which handles a route. For Django, that’s in `flights/views.py`.
@@ -327,6 +335,7 @@ def index(request)
 </body>
 ```
 
+
 ## Admin
 Admin is a built in Django app that makes it very easy to add or modify existing data on a web page. Note that this is a task that would require a good bit of code in Flask. This is perhaps one of the most powerful features of Django, especially when it comes to dealing with and manipulating data.
 
@@ -355,6 +364,7 @@ This allows the admin app to manipulate airports and flights.
 To access the admin site online, a user must log in. This alone is a task that would be quite tedious in Flask, but again, Django comes with this functionality built-in. The first step is to create a **superuser** account with access to everything: `python manage.py createsuperuser`. Django will then prompt for a username, email address, and password. This data will then be entered into a users table, entirely taken care of by Django.
 
 The admin site is already linked by default in the project’s `urls.py` at the `admin/` route. On the admin site, a user can log in and manipulate the data. The admin interface is straightforward and easily navigated. Note that this admin interface isn’t meant to be used by all users of the website, but rather just content managers to dothings like populate models and add information, whearas users will view that information in a separately rendered page.
+
 
 ## Adding More Routes
 To add more routes, for specific flight info, for example, the URLs just need to be added to `flights/urls.py` along with the corresponding view in `flights/views.py` and template in `templates/flights`.
@@ -395,6 +405,7 @@ Destination: {{ flight.destination }}
 ```
 
 `head` contents can be the same as `index.html` for now. Note the current redundancy in HTML templates.
+
 
 ### Template Inheritance
 Template inheritance for HTML pages works much the same way in Django as in Flask. Here’s what a generic template `base.html` could look like:
@@ -452,6 +463,7 @@ and
 
 {% endblock %}
 ```
+
 
 ### Model Relationships
 Before, with Flask and SQL, in order to link passengers to flights, there was an flight ID column in the passenger table so that each passenger can be associated with a flight. The problem with this approach is that each passenger can only be on a single flight. What is more desirable is a **many-to-many** relationship, in which a passenger can be on multiple flights and a flight can have multiple passengers. A common paradigm for this is to implement an **in-between table**, which simply has two columns, one for a passenger ID and one for a flight ID, with as many rows as are necessary. Django allows for this, but does the work of implementing the in-between table automatically.
@@ -527,3 +539,79 @@ and
 `{% empty %}` executes if passengers is empty.
 
 The `Passenger` model can also be added to admin and modified on the admin application in the same was before.
+
+
+## User Registration
+The first step to creating a web UI for use flight registration might creating a new route, along with a corresponding view and HTML template.
+
+```py
+urlpatterns = [
+    path("", views.index, name="index"),
+    path("<int:flight_id>", views.flight, name="flight"),
+    path("<int:flight_id>/book", views.book, name="book")
+]
+```
+
+```py
+def book(request, flight_id):
+    try:
+        passenger_id = int(request.POST["passenger"])
+        flight = Flight.objects.get(pk=flight_id)
+        passenger = Passenger.objects.get(pk=passenger_id)
+    except KeyError:
+        return render(request, "flights/error.html", {"message": "No selection."})
+    except Flight.DoesNotExist:
+        return render(request, "flights/error.html", {"message": "No flight."})
+    except Passenger.DoesNotExist:
+        return render(request, "flights/error.html", {"message": "No passenger."})
+    passenger.flights.add(flight)
+    return HttpResponseRedirect(reverse("flight", args=(flight_id,)))
+```
+
+This code is written on the assumption that the user will submit a web form via a `POST` request with one argument being named `passenger`.
+
+A `KeyError` will be raised if either a `POST` request wasn’t submitted or the `passenger` argument wasn’t provided, leaving no data to be extracted.
+
+`flights/error.html` will be a new generic template to render any number of error messages.
+
+`HttpResponseRedirect` (imported from `django.http`) is used to send the user to their flight page after being registered for it.
+
+`reverse()` (imported from `django.urls`) returns the URL given the route name. Arguments can also be passed as a tuple.
+
+Assuming that creating a passenger is a separate process from registering a passenger for a flight, when the user goes to register for a flight, they should only be able to select from created passengers. To do so, all the ‘non-passengers’ on a flight should be passed into the `flight.html` template.
+
+```py
+def flight(request, flight_id):
+    try:
+        flight = Flight.objects.get(pk=flight_id)
+    except Flight.DoesNotExist:
+        raise Http404("Flight does not exist")
+    context = {
+        "flight": flight,
+        "passengers": flight.passengers.all(),
+        "non_passengers": Passenger.objects.exclude(flights=flight).all()
+    }
+    return render(request, "flights/flight.html", context)
+```
+
+`Passenger.objects` returns all passenger objects, which can then be filtered in a variety of ways. `exclude` removes objects with a particular property; in this case, all passengers on the current flight are excluded.
+
+```html
+{% if non_passengers %}
+    <h2>Add a Passenger</h2>
+    <form action="{% url 'book' flight.id %}" method="post">
+        <select name="passenger">
+            {% for passenger in non_passengers %}
+                <option value="{{ passenger.id }}">{{ passenger }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Book Flight" />
+    </form>
+{% else %}
+    <div>No passengers to add.</div>
+{% endif %}
+```
+
+The enclosing `if` block only allows for registration if there is someone to register.
+
+Here, the `passenger` `select` element is the corresponding data that’s being sent back to the `book` view, and inside `passenger` is `passenger.id`, which is what is expected.
