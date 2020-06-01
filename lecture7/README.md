@@ -633,3 +633,40 @@ Although the booking functionality looks nearly complete, when the registration 
 ```
 
 When the form is submitted, a CSRF token is submitted with it to allow Django to verify that is indeed the same web application is submitting the request.
+
+## Modifying Admin
+Django’s admin interface can be extended to allow for custom behavior. Returning to the flights example, here’s how `flights/admin.py` could be modified.
+
+```py
+from django.contrib import admin
+
+from .models import Airport, Flight, Passenger
+
+# Register your models here.
+
+class PassengerInline(admin.StackedInline):
+    model = Passenger.flights.through
+    extra = 1
+
+class FlightAdmin(admin.ModelAdmin):
+    inlines = [PassengerInline]
+
+class PassengerAdmin(admin.ModelAdmin):
+    filter_horizontal = ("flights",)
+
+admin.site.register(Airport)
+admin.site.register(Flight, FlightAdmin)
+admin.site.register(Passenger, PassengerAdmin)
+```
+
+Because the `Flights` model does not have a reference to `Passengers`, managing the flights on the admin app does not allow for the addition or removal of passengers in the same way that flights can be added or removed to a passenger. This can be solved by creating the `PassengerInline` class, which inherits from the built-in class `StackedInline` that allows for the addition of new relationships between objects. `PassengerInline` represents the place in the UI where a flight’s passengers can be modified.
+
+`Passenger.flights.through` refers to the in-between table linking flights and passengers. By setting `model` to this in-between table, that table is associated with `PassengerInline`.
+
+`extra = 1` sets the number of passengers which can be edited at a time to 1.
+
+`FlightAdmin` is a new class which inherits from `ModelAdmin`, and contains a special set of configurations only to be used when editing passengers. These settings are applied by passing `FlightAdmin` to `admin.site.regiser`.
+
+`inlines` contains all additional inline modification sections for the admin page, which in this case only contains `PassengerInline`.
+
+`filter_horizontal` helps to manipulate what flights a passenger is on. It simply allows for an additional UI element on the admin app to make it easy to add or remove flights that a passenger is on.
