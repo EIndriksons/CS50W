@@ -670,3 +670,25 @@ Because the `Flights` model does not have a reference to `Passengers`, managing 
 `inlines` contains all additional inline modification sections for the admin page, which in this case only contains `PassengerInline`.
 
 `filter_horizontal` helps to manipulate what flights a passenger is on. It simply allows for an additional UI element on the admin app to make it easy to add or remove flights that a passenger is on.
+
+## Static Files
+To use external static files, like `.css` or `.js` files, some special Django syntax has to be used. A base template with static files might look like this:
+
+```html
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% block title %}{% endblock %}</title>
+        <link rel="stylesheet" href="{% static 'flights/styles.css' %}"/>
+    </head>
+    <body>
+        {% block body %}
+        {% endblock %}
+    </body>
+</html>
+```
+
+`{% load static %}` allows for the use of static files.
+Any static file must have its `href` formattaed as `"{% static 'path/static.css' %}"`. * Inside of the application directory (e.g. `flights`), there should be a `static` directory containing a directory for the application which in turn contains any static files. So, the entire hierarchy would look like `flights/static/flights/styles.css`. This is exactly analogous to how templates are stored.
