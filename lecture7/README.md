@@ -355,3 +355,43 @@ This allows the admin app to manipulate airports and flights.
 To access the admin site online, a user must log in. This alone is a task that would be quite tedious in Flask, but again, Django comes with this functionality built-in. The first step is to create a **superuser** account with access to everything: `python manage.py createsuperuser`. Django will then prompt for a username, email address, and password. This data will then be entered into a users table, entirely taken care of by Django.
 
 The admin site is already linked by default in the project’s `urls.py` at the `admin/` route. On the admin site, a user can log in and manipulate the data. The admin interface is straightforward and easily navigated. Note that this admin interface isn’t meant to be used by all users of the website, but rather just content managers to dothings like populate models and add information, whearas users will view that information in a separately rendered page.
+
+## Adding More Routes
+To add more routes, for specific flight info, for example, the URLs just need to be added to `flights/urls.py` along with the corresponding view in `flights/views.py` and template in `templates/flights`.
+
+```py
+urlpatterns = [
+    path("", views.index),
+    path("<int:flight_id>", views.flight),
+]
+```
+
+The syntax for creating routes that accept arguments is very similar to Flask’s.
+
+```py
+def flight(request, flight_id):
+try:
+    flight = Flight.objects.get(pk=flight_id)
+except Flight.DoesNotExist:
+    raise Http404("Flight does not exist")
+context = {
+    "flight": flight,
+}
+return render(request, "flights/flight.html", context)
+```
+
+Because `flight_id` was parameter in the URL, `flight_id` gets passed to the `flight` view.
+
+`pk` stands for `primary key`.
+
+`DoesNotExist` is a special exception built into Django models.
+
+`Http404` is another built-in Django feature (imported from `django.http`) that simply raises a 404 error.
+
+```html
+Flight {{ flight.id }}
+Origin: {{ flight.origin }}
+Destination: {{ flight.destination }}
+```
+
+`head` contents can be the same as `index.html` for now. Note the current redundancy in HTML templates.
