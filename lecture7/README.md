@@ -395,3 +395,60 @@ Destination: {{ flight.destination }}
 ```
 
 `head` contents can be the same as `index.html` for now. Note the current redundancy in HTML templates.
+
+### Template Inheritance
+Template inheritance for HTML pages works much the same way in Django as in Flask. Here’s what a generic template `base.html` could look like:
+
+```html
+<html>
+    <head>
+        <title>{% block title %}{% endblock %}</title>
+    </head>
+    <body>
+        {% block body %}
+        {% endblock %}
+    </body>
+</html>
+```
+
+Now, `index.html` and `flight.html` can be simplified.
+
+```html
+{% extends "flight/base.html" %}
+
+{% block title %}
+    Flights
+{% endblock %}
+
+{% body block %}
+    <h1>Flights</h1>
+    <uL>
+        {% for flight in flights $}
+            <li>
+                <a href="{% for flight in flights $}
+            <li>
+                <a href="{% url 'flight' flight.id %}">{{ flight }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+```
+
+and
+
+```html
+{% extends "flight/base.html" %}
+
+{% block title %}
+    Flight {{ flight.id }}
+{% endblock %}
+    <h1>Flight {{ flight.id }}</h1>
+    <ul>
+        <li>Origin: {{ flight.origin }}</li>
+        <li>Destination: {{ flight.destination }}</li>
+    </ul>
+    <a href="{% url 'index' %}">Back to full listing</a>
+{% block body %}
+
+{% endblock %}
+```
