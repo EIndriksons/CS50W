@@ -79,3 +79,58 @@ urlpatterns = [
 The reason for this apparent complexity is to allow for routing amongst multiple different applications. This `urls.py` serves as the dispatch point for all those lower-level `urls.py` files.
 
 To run the application, run `python manage.py runserver`.
+
+## Flights Revisited
+To demonstrate Django more completely, the next example will reconstruct and expand upon the flight manager application that was originally built with Flask. The project name will be `djangoair`, and it will contain an application called `flights`.
+
+To start off, `flights/urls.py`:
+
+```py
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path("", views.index),
+]
+```
+
+These urls should be linked to djangoair/urls.py in the same way as the previous example.
+
+`flights/views.py`:
+
+```py
+from django.http import HttpResponse
+from django.shortcuts import render
+
+# Create your views here
+def index(request):
+    return HttpResponse("Flights")
+```
+
+This application is now at the same point as the previous example. The next step is to add the database. Django was designed for interacting with data, so it makes it very easy to do so. `flights/models.py` looks like this right now:
+
+```py
+from django.db import models
+
+# Create your models here
+```
+
+This the file to define the classes which will define the types of data being stored in the database. The information to be contained here is very analagous to the information created with Flask-SQLAlchemy.
+
+A model for a flight might look like this:
+
+```py
+class Flight(models.Model):
+    origin = models.CharField(max_length=64)
+    destination = models.CharField(max_length=64)
+    duration = models.IntegerField()
+```
+
+Inherting `models.Model` just establishes this class as a Django model.
+
+Django has a number of built-in types of fields that map to different types of data in a SQL database.
+
+Now, as with new URLs, the models must be linked to the Django project. In `djangoair/settings.py`, there is a list called `INSTALLED_APPS`, pre-populated with Django’s installed apps. To add the `flights` app, `flights.apps.FlightsConfig` should be added to that list.
+
+`FlightsConfig` is the class the defines the settings for the `flights` application.
