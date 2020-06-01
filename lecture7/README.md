@@ -615,3 +615,21 @@ def flight(request, flight_id):
 The enclosing `if` block only allows for registration if there is someone to register.
 
 Here, the `passenger` `select` element is the corresponding data that’s being sent back to the `book` view, and inside `passenger` is `passenger.id`, which is what is expected.
+
+
+## Cross-Site Request Forgery
+Although the booking functionality looks nearly complete, when the registration form is submitted, Django will not allow the user to be redirected to their flight page, and will instead produce a 403 Forbidden error: `CSRF verification failed. Request aborted.` **CSRF (Cross-Site Request Forgery)** is a potential security vulnerability in forms whereby someone could forge where the form is coming from. Django is built in to protect these type of attacks. To allow for this nonetheless, a little bit of extra syntax must be added whenever dealing with a form in Django.
+
+```html
+<form action="{% url 'book' flight.id %}" method="post">
+    {% csrf_token %}
+    <select name="passenger">
+        {% for passenger in non_passengers %}
+            <option value="{{ passenger.id }}">{{ passenger }}</option>
+        {% endfor %}
+    </select>
+    <input type="submit" value="Book Flight" />
+</form>
+```
+
+When the form is submitted, a CSRF token is submitted with it to allow Django to verify that is indeed the same web application is submitting the request.
