@@ -326,3 +326,32 @@ def index(request)
     </ul>
 </body>
 ```
+
+## Admin
+Admin is a built in Django app that makes it very easy to add or modify existing data on a web page. Note that this is a task that would require a good bit of code in Flask. This is perhaps one of the most powerful features of Django, especially when it comes to dealing with and manipulating data.
+
+`flights/admin.py` starts out like this.
+
+```py
+from django.contrib import admin
+
+# Register your models here.
+```
+
+Adding the `Airport` and `Flight` models is simple.
+
+```py
+from django.contrib import admin
+
+from .models import Airpot, Flight
+
+# Register your models here.
+admin.site.register(Airport)
+admin.site.register(Flight)
+```
+
+This allows the admin app to manipulate airports and flights.
+
+To access the admin site online, a user must log in. This alone is a task that would be quite tedious in Flask, but again, Django comes with this functionality built-in. The first step is to create a **superuser** account with access to everything: `python manage.py createsuperuser`. Django will then prompt for a username, email address, and password. This data will then be entered into a users table, entirely taken care of by Django.
+
+The admin site is already linked by default in the project’s `urls.py` at the `admin/` route. On the admin site, a user can log in and manipulate the data. The admin interface is straightforward and easily navigated. Note that this admin interface isn’t meant to be used by all users of the website, but rather just content managers to dothings like populate models and add information, whearas users will view that information in a separately rendered page.
