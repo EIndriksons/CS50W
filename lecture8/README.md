@@ -86,3 +86,60 @@ If, and only if, both of those are true, is the number considered prime!
 A useful Python feature for testing is the built-in `assert` command, which is followed by an boolean expression. If it does not evaluate to `True`, Python will throw an `AssertionError`.
 
 All programs, on exit, return an exit code. Generally speaking, an exit code of 0 indicates that everything went well, and any other code indicates an error. To examine an exit code in bash after running a Python script, use `echo $?`.
+
+
+### `unittest`
+`unittest` is a built-in Python library for testing. Testing `is_prime` with `unittest` might look like this:
+
+```py
+import unittest
+
+from prime import is_prime
+
+
+class Tests(unittest.TestCase):
+
+    def test_1(self):
+        """Check that 1 is not prime."""
+        self.assertFalse(is_prime(1))
+
+    def test_2(self):
+        """Check that 2 is prime."""
+        self.assertTrue(is_prime(2))
+
+    def test_8(self):
+        """Check that 8 is not prime."""
+        self.assertFalse(is_prime(8))
+
+    def test_11(self):
+        """Check that 11 is prime."""
+        self.assertTrue(is_prime(11))
+
+    def test_25(self):
+        """Check that 25 is not prime."""
+        self.assertFalse(is_prime(25))
+
+    def test_28(self):
+        """Check that 28 is not prime."""
+        self.assertFalse(is_prime(28))
+
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+`Tests` inherits from `unittest.TestCase`, which signifies that it contains a series of tests, each of which is capable of extending the basic functionality defined in `unittest.TestCase`.
+
+Each `test` inside `Tests` is simply a method with an appropriate “docstring” labelling it.
+
+`unittest` has a series of built-in, more advanced and readable assert statements. Instead of using `assert isPrime(1) == False`, simply use `self.assertFalse(is_prime(1))`.
+
+`unittest.main()` will run all the tests.
+
+`unittest` methods include (but are not limited to):
+- `assertEqual`
+- `assertNotEqual`
+- `assertTrue`
+- `assertFalse`
+- `assertIn` : checks if an item is in a list
+- `assertNotIn` : checks if an item is not in a list
