@@ -237,3 +237,67 @@ def save(self, *args, **kwargs):
     # This syntax now calls Django's own "save" function, adding this data to the DB (if `clean` was ok).
     super().save(*args, **kwargs)
 ```
+
+
+#### The Front End
+Now that the models have been tested, the next step is to test the views.
+
+```py
+from django.db.models import Max
+from django.test import Client, TestCase
+
+from .models import Airport, Flight, Passenger
+
+# Create your tests here.
+class FlightsTestCase(TestCase):
+
+    # ...same setUp and model testing as before...
+
+    def test_index(self):
+        c = Client()
+        response = c.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["flights"].count(), 2)
+
+    def test_valid_flight_page(self):
+        a1 = Airport.objects.get(code="AAA")
+        f = Flight.objects.get(origin=a1, destination=a1)
+
+        c = Client()
+        response = c.get(f"/{f.id}")
+        self.assertEqual(response.status_code, 200)
+
+    def test_invalid_flight_page(self):
+        max_id = Flight.objects.all().aggregate(Max("id"))["id__max"]
+
+        c = Client()
+        response = c.get(f"/{max_id + 1}")
+        self.assertEqual(response.status_code, 404)
+
+    def test_flight_page_passengers(self):
+        f = Flight.objects.get(pk=1)
+        p = Passenger.objects.create(first="Alice", last="Adams")
+        f.passengers.add(p)
+
+        c = Client()
+        response = c.get(f"/{f.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["passengers"].count(), 1)
+
+    def test_flight_page_non_passengers(self):
+        f = Flight.objects.get(pk=1)
+        p = Passenger.objects.create(first="Alice", last="Adams")
+
+        c = Client()
+        response = c.get(f"/{f.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["non_passengers"].count(), 1)
+```
+
+`Client` simulates a web client that, for testing purposes, can make requests to and get responses from a web server. Using `Client`, requests to different pages can be simulated to ensure that the expected information is being returned.
+
+`c.get("/")` simply uses a `Client` object to make a `GET` request to a route and returns the response (stored as `response`). This response can be checked by verifying `response.status_code` and the contents of `response.contexts`.
+
+An argument can be passed to a URL using the same curly brace/dot notation syntax as before.
+
+`Flight.objects.all().aggregate(Max("id"))["id__max"]` returns the maximum ID value of any flight. This is for test the response to an invalid flight ID in a URL.
