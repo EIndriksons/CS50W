@@ -453,3 +453,47 @@ To actually configure Travis, go to https://travis-ci.org and sync a GitHub acco
         - `DATABASE_PORT` (should be the value of Port from database credentials)
 9. Viewing the logs (to see project behavior)
     1. In your app dashboard which should be at https://dashboard.heroku.com/apps/<APP NAME> click on More on the top-right then click View logs.
+
+
+### Required files for Heroku
+At the root of your Django project folder, you have to have a `requirements.txt` listing any Python package dependencies your project uses (e.g., Django itself), one per line.
+
+You also must have a file called `Procfile`, which looks like the below:
+
+```
+web: gunicorn <PROJECT NAME>.wsgi
+```
+
+where `PROJECT NAME` is the actual project name (for example, `web: gunicorn airline.wsgi`) to let Heroku know how to serve your project.
+
+
+### Using Travis to allow for Continuous Delivery of our Application
+
+Adding environment variables to your project:
+
+While logged into Travis CI, head to `https://travis-ci.com/USERNAME/REPOSITORY/settings` where `USERNAME` is your actual GitHub username and `REPOSITORY` is the name of your repository. In our example, it was `https://travis-ci.com/web50student1/airline4/settings`.
+
+In the Environment Variables section add the following environment variables:
+- `DATABASE_USER` whose value is `postgres`
+- `DATABASE_PASSWORD` whose value is `postgres`
+- `DATABASE_NAME` whose value is `testdb`
+- `DATABASE_HOST` whose value is `0.0.0.0`
+- `DATABASE_PORT` whose value is `5432`
+- `HEROKU_API_KEY` whose value is the Heroku API key you generated above.
+
+The first five of the above needed to be added on Travis to allow it to perform tests, but these are not our production credentials; that’s why those were added to Heroku, before!
+
+The sixth of these is an environment variable that Travis needs in order to actually deploy our code once it finishes testing (without it, anyone could deploy to our Heroku app – probably not ideal!)
+
+Lastly, we need to teach Travis to deploy our code after testing it. To do so, we need to modify our `.travis.yml` file somewhat. At the end of your `.travis.yml` add the following keys and values to have Travis CI deploy to your Heroku app after a successful build of the master branch:
+
+```yaml
+deploy:
+    provider: heroku
+    api_key: $HEROKU_API_KEY
+    app: APP
+    run: python manage.py migrate
+    on: master
+```
+
+Where `APP` is the name of your actual Heroku app as you specified above.
