@@ -301,3 +301,90 @@ class FlightsTestCase(TestCase):
 An argument can be passed to a URL using the same curly brace/dot notation syntax as before.
 
 `Flight.objects.all().aggregate(Max("id"))["id__max"]` returns the maximum ID value of any flight. This is for test the response to an invalid flight ID in a URL.
+
+
+## Selenium
+For testing browser behavior, including JavaScript code, a separate browser testing tool is necessary. One such tool is Selenium, which uses a web driver that allows Python code to programatically pretend to be a user interacting with a webpage. Here’s an example webpage to test that has a counter that can be incremented or decremented with two buttons:
+
+```html
+<html>
+    <head>
+        <title>Counter</title>
+        <script>
+
+            document.addEventListener('DOMContentLoaded', () =>  {
+
+                let counter = 0;
+
+                document.querySelector('#increase').onclick = () => {
+                    counter++;
+                    document.querySelector('h1').innerHTML = counter;
+                };
+
+                document.querySelector('#decrease').onclick = () => {
+                    counter--;
+                    document.querySelector('h1').innerHTML = counter;
+                };
+            });
+        </script>
+    </head>
+    <body>
+        <h1>0</h1>
+        <button id="increase">+</button>
+        <button id="decrease">-</button>
+    </body>
+</html>
+```
+
+Here’s the Selenium Python code to test the page:
+
+```py
+import os
+import pathlib
+import unittest
+
+from selenium import webdriver
+
+# A convenience function to turn a filename into a full path, as needed for a browser
+def file_uri(filename):
+    return pathlib.Path(os.path.abspath(filename)).as_uri()
+
+driver = webdriver.Chrome()
+
+class WebpageTests(unittest.TestCase):
+
+    def test_title(self):
+        driver.get(file_uri("counter.html"))
+        self.assertEqual(driver.title, "Counter")
+
+    def test_increase(self):
+        driver.get(file_uri("counter.html"))
+        increase = driver.find_element_by_id("increase")
+        increase.click()
+        self.assertEqual(driver.find_element_by_tag_name("h1").text, "1")
+
+    def test_decrease(self):
+        driver.get(file_uri("counter.html"))
+        decrease = driver.find_element_by_id("decrease")
+        decrease.click()
+        self.assertEqual(driver.find_element_by_tag_name("h1").text, "-1")
+
+    def test_multiple_increase(self):
+        driver.get(file_uri("counter.html"))
+        increase = driver.find_element_by_id("increase")
+        for i in range(3):
+            increase.click()
+        self.assertEqual(driver.find_element_by_tag_name("h1").text, "3")
+
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+`file_uri` takes in an HTML file and returns the URL that would access that file.
+
+`webdriver.Chrome()` is one of many built-in Selenium web drivers. This one in particular is for interacting with Google Chrome.
+
+`driver.get` will open up whatever URL is passed in.
+
+Each button is programmatically tested by finding each `button` element by ID and calling the click function to simulate a user clicking on it. Then, whatever the text display is can get verified to match the expected value.
