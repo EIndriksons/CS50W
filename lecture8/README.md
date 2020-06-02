@@ -143,3 +143,75 @@ Each `test` inside `Tests` is simply a method with an appropriate “docstring�
 - `assertFalse`
 - `assertIn` : checks if an item is in a list
 - `assertNotIn` : checks if an item is not in a list
+
+
+### Testing Web Applications with Django
+
+#### The Back-End
+Django has its own testing framework to make it easy to test web applications. Test code is found in the application directory in `tests.py`, the one file we did not really consider in Lecture 7.
+
+Here’s a function that could be in the `Flight` model and that might need to be tested if it is going to be used in a view.
+
+```py
+def is_valid_flight(self):
+    return (self.origin != self.destination) and (self.duration >= 0)
+```
+
+This returns `True` if the origin and the destination aren’t the same and its duration is positive.
+
+Here’s an example `flights/tests.py`:
+
+```py
+from django.test import TestCase
+
+from .models import Airport, Flight
+
+# Create your tests here.
+class ModelsTestCase(TestCase):
+
+    def setUp(self):
+
+        # Create airports.
+        a1 = Airport.objects.create(code="AAA", city="City A")
+        a2 = Airport.objects.create(code="BBB", city="City B")
+
+        # Create flights.
+        Flight.objects.create(origin=a1, destination=a2, duration=100)
+        Flight.objects.create(origin=a1, destination=a1, duration=200)
+        Flight.objects.create(origin=a1, destination=a2, duration=-100)
+
+    def test_departures_count(self):
+        a = Airport.objects.get(code="AAA")
+        self.assertEqual(a.departures.count(), 3)
+
+    def test_arrivals_count(self):
+        a = Airport.objects.get(code="AAA")
+        self.assertEqual(a.arrivals.count(), 1)
+
+    def test_valid_flight(self):
+        a1 = Airport.objects.get(code="AAA")
+        a2 = Airport.objects.get(code="BBB")
+        f = Flight.objects.get(origin=a1, destination=a2, duration=100)
+        self.assertTrue(f.is_valid_flight())
+
+    def test_invalid_flight_destination(self):
+        a1 = Airport.objects.get(code="AAA")
+        f = Flight.objects.get(origin=a1, destination=a1)
+        self.assertFalse(f.is_valid_flight())
+
+    def test_invalid_flight_duration(self):
+        a1 = Airport.objects.get(code="AAA")
+        a2 = Airport.objects.get(code="BBB")
+        f = Flight.objects.get(origin=a1, destination=a2, duration=-100)
+        self.assertFalse(f.is_valid_flight())
+```
+
+`TestCase` is a extension to the `unittest` framework that makes it easier to test some Django application specific things.
+
+`ModelsTestCase` is a class that, like before, contains functions for every test.
+
+In the `TestCase` framework, the `setUp` function will be run before any tests. In this case, some airports and flights are created for the tests to check. The `setUp` function is actually run before every test, to ensure that the tests are independent.
+
+Using Django’s infrastructure to run this test is quite powerful because it makes it easy to run all tests across all applications and, because Django knows tests are likely to involve databse manipulations, it creates a separate test database that tests can interact with. This means that `setUp` functions like the one above won’t mess up the real database by trying to add fake airports and flights for testing purposes.
+
+To run the tests, run simply `python manage.py test`.
