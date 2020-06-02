@@ -393,7 +393,9 @@ Each button is programmatically tested by finding each `button` element by ID an
 ## Continuous Integration and Continuous Delivery
 **CI (continuous integration)** consists of frequent integration and merging of code changes between different project contributors back to a main branch along with automated unit testing to verify these integrations. Likewise, **CD (continuous delivery)** consists of making frequent, incremental updates to a web application as those updates are finished.
 
-There are many different tools with the purpose of facilitating CI and testing. One of the more popular ones and the one used in this class is **Travis**. When code is pushed to GitHub, GitHub will notify Travis of those changes. Travis will pull that code and run some tests on it. GitHub will then be notified of the test results.
+There are many different tools with the purpose of facilitating CI and testing (like CircleCI, Codeship, Jenkins, Travis CI). One of the more popular ones and the one used in this class is **Travis**. When code is pushed to GitHub, GitHub will notify Travis of those changes. Travis will pull that code and run some tests on it. GitHub will then be notified of the test results.
+
+![Travis Example](img/travis.png)
 
 Travis’s configuration file, which lists any tests, installations, etc., is written in the YAML file format. YAML files are composed of keys and values, similar to JSON.
 
@@ -425,6 +427,84 @@ script: python manage.py test
 `script` lists the command for actually running the tests.
 
 To actually configure Travis, go to https://travis-ci.org and sync a GitHub account. Then, any repositories that should be tracked by Travis can be selected. After making a push to GitHub, it will be visible on the Travis website as a ‘build’ and will execute the commands as dictated in the configuration file. Travis is able to check whether or not tests were passed by checking the exit code of the testing command. If a build fails any tests, this will be marked on GitHub’s commit log with a red X. A build currently being tested will be marked with a yellow dot, and a successful build will be marked with a green check.
+
+
+### Docker and Containerization
+Because the environment you are developing your application from can differ from the environment you will be deploying to can cause problems, as something might not work as intended between the various machines. To solve this we could use **Virtual Machine** that would setup a guest OS on top of your existing OS where we could virtually run a computer with the required configuration settings to mimick a production environment, however VM's tend to be slower and an overkill for something as simple as a small application.
+
+One solution for this is using **Docker** and **Containerization**, which differs from VM's in a way that each container is not a separate full-blown OS, but rather an isolated container who has the required configuration settings to mimick a production environment. In Docker terms we call this configuration an **Image**, so our goal is to mimick the Image of our production environment.
+
+![Docker representation](img/docker.png)
+
+Docker has other useful features that help us with Continuous Deployment. For example, we can configure Docker Image in a way that allows us to quickly setup a production environment on any computer who has Docker installed by creating a docker Image. This will allow anyone to download our application and run it while the Docker takes care of the whole setup.
+
+For that, we need additional files. See `Dockerfile` which is a file that defines a Docker Image, where Image is just a set of instructions on how we are going to create a Container:
+
+```
+FROM python:3
+WORKDIR /usr/src/app
+ADD requirements.txt /usr/src/app
+RUN pip install -r requirements.txt
+ADD . /usr/src/app
+```
+
+`FROM python:3` a default Docker image for a container that runs python 3
+
+`WORKDIR /usr/src/app` sets the working directory where I am running the application (this is a convention)
+
+`ADD requirements.txt /usr/src/app` and `RUN pip install -r requirements.txt` add requirements to app directory and then run the installation of those requirements
+
+`ADD . /usr/src/app` to add all project files in the working directory
+
+This is how I define my Docker Image so that when I run a new container it would run those commands.
+
+
+Finally, we have `docker-compose.yml` which Will define all of the services for my web application
+
+```yml
+version: '3'
+
+services:
+    db:
+        image: postgres
+    migration:
+        build: .
+        command: python3 manage.py migrate
+        volumes:
+            - .:/usr/src/app
+        depends_on:
+            - db
+    web:
+        build: .
+        command: python3 manage.py runserver 0.0.0.0.:8000
+        volumes:
+            - .:/usr/src/app
+        ports:
+            - "8000:8000"
+        depends_on:
+            - db
+            - migration
+```
+
+`image: postgres` here we specify what Docker image should we run for our database, and here we will use `postgres` which is another default Docker image template.
+
+`migration:` in addition to database I also want to setup a migration from the old database to the new (postgres) database
+
+`build: .` specifies that I want to build from a `Dockerfile` inside the current directory (the previous one)
+
+`command: python3 manage.py migrate` which command to run to make this `migration` service happen
+
+`volumes: - .:/usr/src/app` this links project files together
+
+`depends_on: - db` this specifies that `db` service must be running before I perform the migration
+
+Finally we have `web:` which is the service that will actually run the application.
+
+To run this service we just use `command: python3 manage.py runserver 0.0.0.0.:8000` as usual where `:8000` is a port. `ports: - "8000:8000"` this is necessary because the Docker container has its own separate set of ports where things are running on. So this specifies the mapping for port 8000 in Docker container and port 8000 for my machine. `depends_on: -db -migration` just again makes sure that db and migration has been done before running the application.
+
+Then we just run `docker-compose` which will look for this `docker-compose.yml` file
+
+
 
 ## Continuous Deployment
 
