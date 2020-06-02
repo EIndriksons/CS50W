@@ -388,3 +388,40 @@ if __name__ == "__main__":
 `driver.get` will open up whatever URL is passed in.
 
 Each button is programmatically tested by finding each `button` element by ID and calling the click function to simulate a user clicking on it. Then, whatever the text display is can get verified to match the expected value.
+
+
+## Continuous Integration and Continuous Delivery
+**CI (continuous integration)** consists of frequent integration and merging of code changes between different project contributors back to a main branch along with automated unit testing to verify these integrations. Likewise, **CD (continuous delivery)** consists of making frequent, incremental updates to a web application as those updates are finished.
+
+There are many different tools with the purpose of facilitating CI and testing. One of the more popular ones and the one used in this class is **Travis**. When code is pushed to GitHub, GitHub will notify Travis of those changes. Travis will pull that code and run some tests on it. GitHub will then be notified of the test results.
+
+Travis’s configuration file, which lists any tests, installations, etc., is written in the YAML file format. YAML files are composed of keys and values, similar to JSON.
+
+```yaml
+key1: value1
+key2: value2
+key3:
+    * item1
+    * item2
+    * item3
+key4:
+    nested_key1: value3
+    nested_key2:
+        * item4
+        * item5
+```
+
+In particular, a very simple Travis YAML file will look something like this:
+
+```yaml
+language: python
+python: 3.6
+install: pip install -r requirements.txt
+script: python manage.py test
+```
+
+`install` lists the commands that should be run to install any necessary components before testing. Listing any requirements, such as Django, in `requirements.txt` will automate that installation.
+
+`script` lists the command for actually running the tests.
+
+To actually configure Travis, go to https://travis-ci.org and sync a GitHub account. Then, any repositories that should be tracked by Travis can be selected. After making a push to GitHub, it will be visible on the Travis website as a ‘build’ and will execute the commands as dictated in the configuration file. Travis is able to check whether or not tests were passed by checking the exit code of the testing command. If a build fails any tests, this will be marked on GitHub’s commit log with a red X. A build currently being tested will be marked with a yellow dot, and a successful build will be marked with a green check.

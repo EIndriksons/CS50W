@@ -15,3 +15,4 @@ If you are a student of this course - please see the Course guidelines on [Acade
 - [Lecture 5](lecture5) - JavaScript
 - [Lecture 6](lecture6) - Front Ends
 - [Lecture 7](lecture7) - Django
+- [Lecture 8](lecture8) - Testing, CI & CD
