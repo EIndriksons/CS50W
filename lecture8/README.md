@@ -425,3 +425,31 @@ script: python manage.py test
 `script` lists the command for actually running the tests.
 
 To actually configure Travis, go to https://travis-ci.org and sync a GitHub account. Then, any repositories that should be tracked by Travis can be selected. After making a push to GitHub, it will be visible on the Travis website as a ‘build’ and will execute the commands as dictated in the configuration file. Travis is able to check whether or not tests were passed by checking the exit code of the testing command. If a build fails any tests, this will be marked on GitHub’s commit log with a red X. A build currently being tested will be marked with a yellow dot, and a successful build will be marked with a green check.
+
+## Continuous Deployment
+
+### Deploying our app to Heroku:
+
+1. To creating a Heroku app, create an account if you don’t have one or login if you do.
+2. Create a new app specifying its name which has to be unique and its region.
+3. Generating a Heroku API key to Authorize Travis CI:
+    1. Head to **Applications** tab under the account settings.
+    2. Under **Authorizations**, click Create Authorization.
+    3. Add a description and optionally specify a duration (in seconds) after which this API key will expire (you likely don’t want to expire this if you intend for your project to run indefinitely) then click Create.
+4. Provisioning a PostgreSQL database:
+    1. Head to your app’s resources dashboard which should have a URL of the form https://dashboard.heroku.com/apps/<APP-NAME>/resources where APP NAME is the actual name of your app. In our example, it was https://dashboard.heroku.com/apps/kzidane-airline/resources for example.
+5. Under **Add-ons** find Heroku Postgres.
+6. Select the item and click Provision to create your PostgreSQL database.
+7. Finding the database credentials:
+    1. Click on the Database that you just created then click the Settings tab near the top.
+    2. Next to Database Credentials click View Credentials.
+8. Setting environment variables for the Heroku app:
+    1. In your app settings which should be at https://dashboard.heroku.com/apps/<APP NAME>/settings, click **Reveal Config Vars**.
+    2. Add the following variables (recall these are accessed in airline4/airline/settings.py in the demo):
+        - `DATABASE_USER` (should be the value of User from database credentials)
+        - `DATABASE_PASSWORD` (should be the value of Password from database credentials)
+        - `DATABASE_NAME` (should be the value of Database from database credentials)
+        - `DATABASE_HOST` (should be the value of Host from database credentials)
+        - `DATABASE_PORT` (should be the value of Port from database credentials)
+9. Viewing the logs (to see project behavior)
+    1. In your app dashboard which should be at https://dashboard.heroku.com/apps/<APP NAME> click on More on the top-right then click View logs.
