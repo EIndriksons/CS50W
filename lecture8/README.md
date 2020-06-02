@@ -215,3 +215,25 @@ In the `TestCase` framework, the `setUp` function will be run before any tests. 
 Using Django’s infrastructure to run this test is quite powerful because it makes it easy to run all tests across all applications and, because Django knows tests are likely to involve databse manipulations, it creates a separate test database that tests can interact with. This means that `setUp` functions like the one above won’t mess up the real database by trying to add fake airports and flights for testing purposes.
 
 To run the tests, run simply `python manage.py test`.
+
+
+#### Defending Against Bad Data
+We can also write methods in our models to prevent against illogical or “bad” data. One instance, for example, might be to try to prevent content managers from trying to create flights with the same origin and destination, or a non-positive duration. To do this, we can override the functionality of some more built-in Django testing functions.
+
+In `airline1/models.py`:
+
+```py
+# Add a method that raises "Validation errors" if the data is illogical.
+def clean(self):
+    if self.origin == self.destination:
+        raise ValidationError("Origin and destination must be different.")
+    elif self.duration < 1:
+        raise ValidationError("Duration must be positive.")
+
+# Call this method before trying to add data, overriding the default behavior of built-in `save`.
+def save(self, *args, **kwargs):
+    self.clean()
+
+    # This syntax now calls Django's own "save" function, adding this data to the DB (if `clean` was ok).
+    super().save(*args, **kwargs)
+```
