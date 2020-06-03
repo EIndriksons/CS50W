@@ -202,3 +202,62 @@ Note that for the previous example, the HTML had to purposefully written in orde
 ```
 
 `message.contents | safe` indicates that nothing should be escaped. Note that whenever template contents are generated manually, such as via string concatentation in the first example, that these sorts of automatic defenses are bypassed as well.
+
+
+### Cross-Site Request Forgery
+Cross-site request forgery (CSRF) consists of forging a request to different website that the user is already logged in to. Consider a bank’s website, which allows for money transfers at `/transfer` by passing in the recipient and an amount. Here’s some HTML that can exploit that:
+
+```html
+<body>
+    <a href="http://yourbank.com/transfer?to=brian&amt=2800"?>
+        Click Here!
+    </a>
+</body>
+```
+
+If the user is already logged in to the bank, then simply following that link will initiate the transfer. The bank could defend against this sort of intrusion by not using a `GET` request for this sort of functionality. In general, it is good practice to use `POST` requests and form submissions, rather than `GET` requests, for any such state modifications.
+
+A more insidious version of the previous exploit uses the same trick of putting the link inside an `img` element, such that the user doesn’t even need to do anything other than load the page to trigger the transfer.
+
+```html
+<body>
+    <img src="http://yourbank.com/transfer?to=brian&amt=2800">
+</body>
+```
+
+Even if the bank was wise enough to require a `POST` request to initiate a transfer, there is still the potential for abuse.
+
+```html
+<body>
+    <form action="https://yourbank.com/transfer" method="post">
+        <input type="hidden" name="to" value="brian">
+        <input type="hidden" name="amt" value="2800">
+        <input type="submit" value="Click Here!">
+    </form>
+<body>
+```
+
+These inputs, pre-filled with the desired values, will not be shown to the user because of the `type="hidden"` attribute. All the user sees is a button.
+
+By changing the first `body` tag of the previous example, the form can be made to submit automatically, without the user having to do anything at all.
+
+```html
+<body onload="document.forms[0].submit()">
+```
+
+`document.forms[0]` returns the first form in the document, which is already pre-filled with the bank transfer information. As soon as the page is loaded, the `POST` request will be made.
+
+The solution to this vulnerability is to add a special **token**, essentially a password, to be submitted with every form. These tokens are added automatically by the server, and when the server sees a request, it can compare the token it receives with the token it knows to have inserted. In this way, only valid form requests will be respected. Because a new token is generated with every form, they cannot be reused or stolen.
+
+Django and many other web frameworks have support for this CSRF token functionality. With Django, adding a CSRF token is simple:
+
+```py
+<form action="https://yourbank.com/transfer" method="post">
+    
+    {% csrf_token %}
+    
+    <input type="hidden" name="to" value="brian">
+    <input type="hidden" name="amt" value="2800">
+    <input type="submit" value="Click Here!">
+</form>
+```
