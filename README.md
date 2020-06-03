@@ -18,3 +18,4 @@ If you are a student of this course - please see the Course guidelines on [Acade
 - [Lecture 8](lecture8) - Testing, CI & CD
 - [Lecture 9](lecture9) - GitHub, Travis CI (Guest lectures)
 - [Lecture 10](lecture10) - Scalability
+- [Lecture 11](lecture11) - Security
