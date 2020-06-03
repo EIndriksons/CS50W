@@ -105,7 +105,20 @@ Different users, same password. Different salts, different hashes. If someone lo
 ### Database Leakage
 **Database leakage** refers to any information that is unintentionally released from a database. One example might be a password reset page, where a user can enter the e-mail to get a link to reset a password. If the site has one message for a sent e-mail and another message for an e-mail that’s not tied to an account, then users can figure out if an e-mail is associated with an account. This information, even if it doesn’t compromise the account, might still be sensitive.
 
+### SQL Injection
+SQL injection consists of sending, through a form or otherwise, SQL code to web server which then executes that code a database. This is a potential vulnerability if user input is being passed directly into a command like so:
+
+```py
+username = request.form.get("username")
+password = request.form.get("password")
+user = db.execute("SELECT * FROM users WHERE (username = '" + username + "') AND (password = '" + password + "')").first()
+```
+
+To avoid this, any input that is passed, in one way or another, into a command should be have potentially dangerous characters, like `'`, escaped. Often times, this **input sanitation** is done automatically when using libraries such as SQLAlchemy.
+
+
 **Therefore:**
-- Make sure to Hash the passwords (aka. never store them plaintext)
-    * Additionally, make sure to Salt the passwords before Hashing them, to prevent identical Hash formation from identical passwords that allow for various dictionary attacks
-- Make sure your application does not leak unecessary data that might reveal and identify something
+- Make sure to Hash the passwords (aka. never store them plaintext).
+    * Additionally, make sure to Salt the passwords before Hashing them, to prevent identical Hash formation from identical passwords that allow for various dictionary attacks.
+- Make sure your application does not leak unecessary data that might reveal and identify something.
+- Make sure your application is not vulnerable to SQL injections. Use modern libraries to take care of communication with the database (like SQLAlchemy).
