@@ -2,18 +2,18 @@
 
 # TL-DR
 - [OSS](#open-source-software) - Make sure which codebase you expose to the public / keep open source, and which you don't.
-- [Services](#services-(git,-GitHub,-Travis,-etc.)) - Make sure to properly secure any services (by using long passwords, two-factor authentication, etc.) that have access to your source code (GitHub, Travis, AWS, Heroku, etc.) or other sensitive information that can be used to expose your source code or project information.
-- [Services](#services-(git,-GitHub,-Travis,-etc.)) - Make sure to not push into Git or other Version Control systems sensitive information like passwords or private keys
+- [Services](#services-git-github-travis-etc) - Make sure to properly secure any services (by using long passwords, two-factor authentication, etc.) that have access to your source code (GitHub, Travis, AWS, Heroku, etc.) or other sensitive information that can be used to expose your source code or project information.
+- [Services](#services-git-github-travis-etc) - Make sure to not push into Git or other Version Control systems sensitive information like passwords or private keys
 - [HTML](#html) - Make sure to inform your users about phising attacks, possibility that someone might copy your front-end on a different, similar sounding domain name and redirect your users to a fake website, etc.
 - [Crypto](#cryptography) - Make sure your app is using secure http/https protocols.
 - [Env. Var.](#environmental-variables) - Make sure you are storing your sensitive keys, passwords, database credentials, etc. in environmental variables on the server.
 - [Hashing](#hashing-passwords) - Make sure to Hash the passwords (aka. never store them in plaintext).
-    * [Hashing + Salting](#salting-&-hashing-passwords) - Additionally, make sure to Salt the passwords before Hashing them, to prevent identical Hash formation from identical passwords that allow for various dictionary attacks.
+    * [Hashing + Salting](#salting--hashing-passwords) - Additionally, make sure to Salt the passwords before Hashing them, to prevent identical Hash formation from identical passwords that allow for various dictionary attacks.
 - [Database Leak](#database-leakage) - Make sure your application does not leak unecessary data that might reveal and identify something.
 - [SQL Injection](#sql-injection) - Make sure your application is not vulnerable to SQL injections. Use modern libraries to take care of input sanitization and communication with the database (like SQLAlchemy).
-- [API's](#API's) - Make sure only right users can access your API. If you want to restrict certain users make sure to provide and ask for API keys.
-- [API's](#API's) - Make sure only the right users have access to certain routes and therefore information
-- [API's](#API's) - Make sure to rate limit users to prevent spam requests
+- [API's](#apis) - Make sure only right users can access your API. If you want to restrict certain users make sure to provide and ask for API keys.
+- [API's](#apis) - Make sure only the right users have access to certain routes and therefore information
+- [API's](#apis) - Make sure to rate limit users to prevent spam requests
 - [XSS](#cross-site-scripting) - Make sure your application is not vulnerable to Cross-Site Scripting. Use modern libraries to take care of input sanitization to prevent injection of scripts in your HTML.
 - [XSRF](#cross-site-request-forgery) - Make sure you use POST request whenever you are creating or updating a resource instead of GET request.
 - [XSRF](#cross-site-request-forgery) - Make sure to include CSRF token with any form submission. Many modern libraries usually have this functionality built into them.
@@ -112,6 +112,8 @@ Different users, same password. Different salts, different hashes. If someone lo
 ### Database Leakage
 **Database leakage** refers to any information that is unintentionally released from a database. One example might be a password reset page, where a user can enter the e-mail to get a link to reset a password. If the site has one message for a sent e-mail and another message for an e-mail that’s not tied to an account, then users can figure out if an e-mail is associated with an account. This information, even if it doesn’t compromise the account, might still be sensitive.
 
+![Database Leakage](img/3-database-leakage.png)
+
 ### SQL Injection
 SQL injection consists of sending, through a form or otherwise, SQL code to web server which then executes that code a database. This is a potential vulnerability if user input is being passed directly into a command like so:
 
@@ -120,6 +122,8 @@ username = request.form.get("username")
 password = request.form.get("password")
 user = db.execute("SELECT * FROM users WHERE (username = '" + username + "') AND (password = '" + password + "')").first()
 ```
+
+![SQL Injection](img/4-sql-injection.png)
 
 To avoid this, any input that is passed, in one way or another, into a command should be have potentially dangerous characters, like `'`, escaped. Often times, this **input sanitation** is done automatically when using libraries such as SQLAlchemy.
 
