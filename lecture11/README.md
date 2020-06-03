@@ -122,3 +122,13 @@ To avoid this, any input that is passed, in one way or another, into a command s
     * Additionally, make sure to Salt the passwords before Hashing them, to prevent identical Hash formation from identical passwords that allow for various dictionary attacks.
 - Make sure your application does not leak unecessary data that might reveal and identify something.
 - Make sure your application is not vulnerable to SQL injections. Use modern libraries to take care of communication with the database (like SQLAlchemy).
+
+## API's
+When designing APIs, it is often important to ensure that certain users only have access to certain information. To keep track of users, API keys, simply long strings, are generated and associated with every user. Every time an API request is made, an API key must be passed with it.
+
+API keys allow for **route authentication**, or verifying that a user has permission to access a certain route. They also can be used for **rate limiting**, or ensuring that a user can only make so many requests.
+
+**Therefore:**
+- Make sure only right users can access your API. If you want to restrict certain users make sure to provide and ask for API keys.
+- Make sure the user has access to certain routes
+- Make sure to rate limit users to prevent spam requests
