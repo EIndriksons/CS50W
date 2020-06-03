@@ -1,11 +1,27 @@
 # Lecture 11 - Security
 
+# TL-DR
+- [OSS](#open-source-software) - Make sure which codebase you expose to the public / keep open source, and which you don't.
+- [Services](#services-(git,-GitHub,-Travis,-etc.)) - Make sure to properly secure any services (by using long passwords, two-factor authentication, etc.) that have access to your source code (GitHub, Travis, AWS, Heroku, etc.) or other sensitive information that can be used to expose your source code or project information.
+- [Services](#services-(git,-GitHub,-Travis,-etc.)) - Make sure to not push into Git or other Version Control systems sensitive information like passwords or private keys
+- [HTML](#html) - Make sure to inform your users about phising attacks, possibility that someone might copy your front-end on a different, similar sounding domain name and redirect your users to a fake website, etc.
+- [Crypto](#cryptography) - Make sure your app is using secure http/https protocols.
+- [Env. Var.](#environmental-variables) - Make sure you are storing your sensitive keys, passwords, database credentials, etc. in environmental variables on the server.
+- [Hashing](#hashing-passwords) - Make sure to Hash the passwords (aka. never store them in plaintext).
+    * [Hashing + Salting](#salting-&-hashing-passwords) - Additionally, make sure to Salt the passwords before Hashing them, to prevent identical Hash formation from identical passwords that allow for various dictionary attacks.
+- [Database Leak](#database-leakage) - Make sure your application does not leak unecessary data that might reveal and identify something.
+- [SQL Injection](#sql-injection) - Make sure your application is not vulnerable to SQL injections. Use modern libraries to take care of input sanitization and communication with the database (like SQLAlchemy).
+- [API's](#API's) - Make sure only right users can access your API. If you want to restrict certain users make sure to provide and ask for API keys.
+- [API's](#API's) - Make sure only the right users have access to certain routes and therefore information
+- [API's](#API's) - Make sure to rate limit users to prevent spam requests
+- [XSS](#cross-site-scripting) - Make sure your application is not vulnerable to Cross-Site Scripting. Use modern libraries to take care of input sanitization to prevent injection of scripts in your HTML.
+- [XSRF](#cross-site-request-forgery) - Make sure you use POST request whenever you are creating or updating a resource instead of GET request.
+- [XSRF](#cross-site-request-forgery) - Make sure to include CSRF token with any form submission. Many modern libraries usually have this functionality built into them.
+- [Scalability](#scalability) - Make sure to have filtering system in place to prevent DDoS attacks and blacklist suspicious users.
+
 
 ## Open Source Software
 Open-source software’s code is openly available to anyone who would like to see it or develop and contribute to it. In terms of security, open-source software could be considered more secure because it can be seen by anyone. On the other hand, any security vulnerabilites can be exploited by anyone who can find them.
-
-**Therefore:**
-- Make sure which codebase you show to the public / keep open source, and which you don't.
 
 
 ## Services (Git, GitHub, Travis, etc.)
@@ -19,10 +35,6 @@ It is possible to revert to an old commit and prune away extra commits and force
 
 Also when using a CI tool such as Travis, that tool has access to the entire codebase. Now, if either Travis or GitHub, for example, are compromised, so is the codebase. This is the case whenever accounts or sites grant other applications access to user information. When designing services that share information, it is important to be careful when choosing whom to share with. Users of these services should be careful about what information is potentially being exposed.
 
-**Therefore:**
-- Make sure to properly secure any services that have access to your source code (GitHub, Travis, AWS, Heroku, etc.) or sensitive information
-- Make sure to not push into Git sensitive information like passwords or private keys
-
 
 ## HTML
 Because any page’s HTML source code can be easily viewed and copied, a bank’s website’s HTML could be replicated to deceive users into inputting their credentials.
@@ -32,9 +44,6 @@ Links in particular are easily abused. Any links can be modified to redirect use
 From the user’s end, one way to defend against these security vulnerabilites is to be careful about what links are being clicked. Web browsers often display in a status bar or some other UI the actual link.
 
 Ultimately, there’s no way to avoid a site’s HTML from being viewed or copied because the server has to send to HTML source code to a user in order for the web page to be rendered by the browser.
-
-**Therefore:**
-- Make sure to inform your users about any phising attacks, possibility that someone might copy your front-end on a different, similar sounding domain name and redirect your users to a fake website, etc.
 
 
 ## Servers (like Flask, Django, etc.)
@@ -64,10 +73,6 @@ As has been noted, passwords and other credentials should never be put in source
 app.config["SECRET_KEY"] = "dHdlbnR5ZWlnaHQ                 # Bad practice
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")     # Good practice
 ```
-
-**Therefore:**
-- Make sure your app is using secure http/https protocols
-- Make sure you are storing your sensitive keys, passwords, database credentials, etc. in environmental variables
 
 
 ## SQL
@@ -119,24 +124,15 @@ user = db.execute("SELECT * FROM users WHERE (username = '" + username + "') AND
 To avoid this, any input that is passed, in one way or another, into a command should be have potentially dangerous characters, like `'`, escaped. Often times, this **input sanitation** is done automatically when using libraries such as SQLAlchemy.
 
 
-**Therefore:**
-- Make sure to Hash the passwords (aka. never store them plaintext).
-    * Additionally, make sure to Salt the passwords before Hashing them, to prevent identical Hash formation from identical passwords that allow for various dictionary attacks.
-- Make sure your application does not leak unecessary data that might reveal and identify something.
-- Make sure your application is not vulnerable to SQL injections. Use modern libraries to take care of communication with the database (like SQLAlchemy).
-
 ## API's
 When designing APIs, it is often important to ensure that certain users only have access to certain information. To keep track of users, API keys, simply long strings, are generated and associated with every user. Every time an API request is made, an API key must be passed with it.
 
 API keys allow for **route authentication**, or verifying that a user has permission to access a certain route. They also can be used for **rate limiting**, or ensuring that a user can only make so many requests.
 
-**Therefore:**
-- Make sure only right users can access your API. If you want to restrict certain users make sure to provide and ask for API keys.
-- Make sure the user has access to certain routes
-- Make sure to rate limit users to prevent spam requests
 
 ## JavaScript
 While HTML and CSS can be abused, they only affect how the browser renders a web page. With JavaScript arises the possibility for malicious code to be run inside the browser.
+
 
 ### Cross-Site Scripting
 Similar to how SQL injections abused the possibilities for users to modify the code being run on a database, cross-site scripting consists of running some arbitrary JavaScript code inside a browser. Here’s is an example of a Flask application that is vulnerable to such an attack:
@@ -263,6 +259,7 @@ Django and many other web frameworks have support for this CSRF token functional
     <input type="submit" value="Click Here!">
 </form>
 ```
+
 
 ## Scalability
 Because any server is a finite machine capable of handling a finite number of requests, a hacker can send an excessive number of requests in a short period of time to try and shut down a server. This is called a **denial of service**, or **DoS**, attack.
