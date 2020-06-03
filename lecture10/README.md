@@ -50,3 +50,31 @@ A simple way to ensure that a user is sent to the same server repeatedly is to g
 Cookies can also store session information directly. Flask, for example, uses **signed cookies** which stores all the users session information. These sessions can be something a simple as a dictionary that contains a user ID and any other pertinent info.
 
 One issue with cookies is increasing size as data becomes more complex. In terms of security, cookies can be stolen to gain access to a user’s account. Even without access to a cookie, storing explicitly formatted data (integers for user ids) is easily modified and faked. By including a private key in a web application, cookies can be generated with a signature based on the data and the private key. This signature should be difficult enough to generate that it can be received with reasonable confidence that it’s genuine.
+
+
+## Database Scaling
+Databases can get overloaded in much the same way as servers, especially if a single database is supporting multiple servers. If there is only one database, then that’s a **single point of failure**. If the database drops, the whole system comes down. A load balancer is another example of single point of failure.
+
+![Database Scaling](img/4-databases.png)
+
+### Database Partitioning
+Querying large database tables can become complicated and time-consuming. Those large tables can often be split up into multiple, more managable and more efficient tables.
+
+- **Vertical database partitioning** consists of separating a table by decreasing the number of columns. This has already been seen in the recurring airline example when foreign keys were used to partition a table into a locations table and a flights table.
+- **Horizontal database partitioning** consists of splitting up the rows into logical groups. For example, an entire flights table could be split up into a table for domestic flights and another for international flights. Both of these tables have the same columns, but fewer rows. This partitioning results in faster and more specific queries. This separation does require more code to manage, however. Any column changes now need to be updated on many tables. A query might actually be slower if data from two tables needs to be accessed.
+- **Database sharding** consists of dividing a database amongst separate servers. This can help eliminate the slowdown from having to query two tables at once, assuming those two tables are on separate servers. Joining tables, however, becomes slower.
+
+### Database Replication
+Creating multiple copies of the same database allows for the distribution of load.
+
+A **single-primary replication model** has a single database which can be both read from and written to. Other, secondary databases, can only be read from. Any writes to the primary database are automatically passed to secondary databases. Data is both replicated and synchronized.
+
+Potential issues include race conditions. Single-primary replication is less favorable for applications which expect a lot of writes, since there is still a single point of failure with the primary database.
+
+![Single-primary replication model](img/5-single.png)
+
+A **multi-primary replication model** allows for any number of databases which can be read from and written to. Any writes are copied to other databases.
+
+Similar issues to race conditions can occur. If two users try to register themselves on two different databases, they might end up with the same primary key user ID, which will be an issue when the databases try to update each other. Two databases might try to update the same row at the same time. Whatever they might be, multi-primary replication systems need rules to resolve issues with simultaneous updates.
+
+![Multi-primary replication model](img/6-multi.png)
