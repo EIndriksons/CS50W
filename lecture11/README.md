@@ -17,6 +17,8 @@ With Git or other version control systems in general, it is important that **sen
 
 It is possible to revert to an old commit and prune away extra commits and force push this back to GitHub, but all that code should be considered compromised. Any compromised credentials should be exchanged with new ones.
 
+Also when using a CI tool such as Travis, that tool has access to the entire codebase. Now, if either Travis or GitHub, for example, are compromised, so is the codebase. This is the case whenever accounts or sites grant other applications access to user information. When designing services that share information, it is important to be careful when choosing whom to share with. Users of these services should be careful about what information is potentially being exposed.
+
 **Therefore:**
 - Make sure to properly secure any services that have access to your source code (GitHub, Travis, AWS, Heroku, etc.) or sensitive information
 - Make sure to not push into Git sensitive information like passwords or private keys
@@ -261,3 +263,10 @@ Django and many other web frameworks have support for this CSRF token functional
     <input type="submit" value="Click Here!">
 </form>
 ```
+
+## Scalability
+Because any server is a finite machine capable of handling a finite number of requests, a hacker can send an excessive number of requests in a short period of time to try and shut down a server. This is called a **denial of service**, or **DoS**, attack.
+
+A **distributed denial of service**, or **DDoS**, attack consists of using a large number of bots or computers to make an even greater number of requests to a single server.
+
+One potential safeguard against DDoS attacks is a filtering system to try and ensure that only valid requests are respected. If a user is suspicious, they could be blacklisted to prevent them from making any future requests. In the end, however, it often does come down to a battle of resources between the attacker and the server(s). Often times, this needs to be dealt with at the server or ISP level, as opposed to at the application level, especially when working with a large web application.
