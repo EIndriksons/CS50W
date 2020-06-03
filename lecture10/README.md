@@ -42,3 +42,11 @@ The amount of traffic that a web application receives is often varied, which mak
 Autoscaling and other features are one of hthe benefits of **cloud computing** which allows web applications to be hosted on remote servers, as opposed to having to set up a server in the actual office of the company who owns the application, for example. Other benefits of cloud computing include not having to worry about IT services, etc. to actually maintain the server.
 
 If one server goes offline, session data could be lost (depending on implementation), or a user could be continually redirected to an offline server. In order for a load balancer to be aware of the state of the servers, the servers should send a ‘heartbeat’ back to the balancer at a known interval. Faster heartbeats allow for a more current idea of server status, but slower heartbeats allowed for save energy and resources.
+
+
+#### Cookies & Server Scaling
+A simple way to ensure that a user is sent to the same server repeatedly is to give the user a cookie to send b ack which simply tells the load balancer what server the user came from.
+
+Cookies can also store session information directly. Flask, for example, uses **signed cookies** which stores all the users session information. These sessions can be something a simple as a dictionary that contains a user ID and any other pertinent info.
+
+One issue with cookies is increasing size as data becomes more complex. In terms of security, cookies can be stolen to gain access to a user’s account. Even without access to a cookie, storing explicitly formatted data (integers for user ids) is easily modified and faked. By including a private key in a web application, cookies can be generated with a signature based on the data and the private key. This signature should be difficult enough to generate that it can be received with reasonable confidence that it’s genuine.
