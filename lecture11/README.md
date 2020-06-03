@@ -31,3 +31,34 @@ Ultimately, there’s no way to avoid a site’s HTML from being viewed or copie
 **Therefore:**
 - Make sure to inform your users about any phising attacks, possibility that someone might copy your front-end on a different, similar sounding domain name and redirect your users to a fake website, etc.
 
+## Servers (like Flask, Django, etc.)
+With any web server, packets of information are being sent between routers, which opens up new security concerns. Often times, a single request sent to a server will travel through multiple routers. Any of those midway points could potentially read any of the information being passed.
+
+![Servers](img/0-servers.png)
+
+### Cryptography
+Cryptography is the process of encrypting traffic flowing through these routers so that a middleman cannot read the data.
+
+**Secret-key cryptography** consists of both the sender and the recipient both know a secret key which can be used, along with a cryptographic algorithm, to encode and decode the message. The encrypted version is called **ciphertext**. The unencrypted version is **plaintext**.
+
+In order for this system to work, only the sender and the recipient can know the key, which means that the key cannot be transmitted along with ciphertext.
+
+![Secret-key cryptography](img/1-secret-key-crypto.png)
+
+**Public-key cryptography** uses two keys, a **public key** and a **private key**. The public key can only be used to encrypt information, while the private key, which should never be shared or sent across a network, can be used to decrypt information.
+
+Every time a message needs to be sent, the recipient sends their public key, which can be known, to the sender, who uses the key to encrypt the message. The recipient’s private key is the only key which can be used to decrypt the ciphertext. It doesn’t matter, then, that intermediaries might have the public key.
+
+![Public-key cryptography](img/2-public-key-crypto.png)
+
+### Environmental variables
+As has been noted, passwords and other credentials should never be put in source code. What should be done instead is to set parameters like secret keys using environment variables, which are located inside the system the program is running on but not in the program’s code itself.
+
+```
+app.config["SECRET_KEY"] = "dHdlbnR5ZWlnaHQ                 # Bad practice
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")     # Good practice
+```
+
+**Therefore:**
+- Make sure your app is using secure http/https protocols
+- Make sure you are storing your sensitive keys, passwords, database credentials, etc. in environmental variables
