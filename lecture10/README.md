@@ -78,3 +78,24 @@ A **multi-primary replication model** allows for any number of databases which c
 Similar issues to race conditions can occur. If two users try to register themselves on two different databases, they might end up with the same primary key user ID, which will be an issue when the databases try to update each other. Two databases might try to update the same row at the same time. Whatever they might be, multi-primary replication systems need rules to resolve issues with simultaneous updates.
 
 ![Multi-primary replication model](img/6-multi.png)
+
+### Caching
+**Caching** seeks to avoid wasting time performing operations that have already been done before, namely, by taking data and storing it locally temporarily. For a relatively static homepage, for example, it doesn’t make much sense to regenerate a page every time a user requests it repeatedly.
+
+Client-side caching, performed by the web browser, stores files that are likely to be static (`.css` or `.js` files, for example) to be re-used. This saves time and computational energy. 
+
+Inside an HTTP response, the server adds HTTP headers, one of which might be `Cache-Control: max-age=86400`. This sets the maximum time the page should be cached for (1 day, in this case). After that, the server should be queried again.
+
+Issues can occur on both sides of the timeframe. If a page changes sooner than expected, a user might not see those changes. If a page changes later then expected, resources are waseted querying for the same old page. To circumvent this, an identifier can be associated with the webpage or resource which is modified after any update. 
+
+In HTML, this is an `ETag`, a long hexadecimal sequence that is uniquely associated with a version of a resource. If the server sees that this identifier hasn’t changed it can send back a `304 Not Modified` response code to indicate the cache is not *stale*.
+
+If a cache is serving an entire network, private pages, such as social media pages, shouldn’t be cached and accessed by different users. To help with this, a cache can be set as either public or private in the HTTP header.
+
+
+#### Server-side caching
+**Server-side caching** adds a cache to the server-side web, such that each server has access to the same cache. Instead of querying a database repeatedly, servers can query the cache and receive a much faster response if the query has been made recently.
+
+![Server-side caching](img/7-server-side-cache.png)
+
+Any time the database is updated, there is potential for the cache to become *stale* or *invalid*. The cache could be updated with any write, but often times it is wiser to employ some logic to only invalidate the cache at certain points. One simple workaround is to simply set an expiration for the cache if the temporary inaccuracy is tolerable.
