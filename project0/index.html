@@ -1,12 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Search</title>
-    </head>
-    <body>
-        <form action="https://google.com/search">
-            <input type="text" name="q">
-            <input type="submit" value="Google Search">
-        </form>
-    </body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Search</title>
+  </head>
+  <body>
+    <header>
+      <div class="links">
+        <a href="index.html">Search</a>
+        <a href="image.html">Image Search</a>
+        <a href="advanced.html">Advanced Search</a>
+      </div>
+    </header>
+    <main>
+      <div class="logo"></div>
+      <form id="search" action="https://google.com/search">
+        <div class="form__input">
+          <input type="text" name="q" />
+        </div>
+        <div class="form__buttons">
+          <input type="submit" value="Google Search" />
+          <input id="btn-lucky" type="submit" value="I'm Feeling Lucky" />
+        </div>
+        <div id="search-input"></div>
+      </form>
+    </main>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelector('#btn-lucky').onclick = (btn) => {
+          btn.preventDefault(); // Prevent defaul submit
+
+          // Create new input element and append it to the inputContainer
+          const inputContainer = document.querySelector('#search-input');
+          const inputElement = document.createElement('input');
+          inputElement.setAttribute('type', 'hidden');
+          inputElement.setAttribute('name', 'btnI');
+          inputElement.setAttribute('value', 'I');
+          inputContainer.appendChild(inputElement);
+
+          // Submit the form (with the new input element)
+          document.querySelector('#search').submit();
+
+          // Delete the input element
+          inputContainer.innerHTML = '';
+        };
+      });
+    </script>
+  </body>
 </html>
